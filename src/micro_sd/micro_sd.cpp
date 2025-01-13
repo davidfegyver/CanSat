@@ -433,3 +433,32 @@ uint8_t MicroSd::getUsedSpacePercent()
 {
   return UsedSpacePercent;
 }
+
+bool MicroSd::WritePicture(const String &photoName, const uint8_t *photoData, size_t photoLen) {
+    if (!CardHealthy) {
+        logger.addEvent(F("Failed to write picture - Card not healthy"));
+        return false;
+    }
+
+    bool status = false;
+
+    File file = SD_MMC.open(photoName, FILE_WRITE);
+
+    if (!file) {
+        logger.addEvent(PSTR("Failed to write picture - Could not open file: ") + photoName);
+        return status;
+    }
+
+    size_t bytesWritten = file.write(photoData, photoLen);
+
+    if (bytesWritten != photoLen) {
+        logger.addEvent(F("Failed to write picture - Error while writing to file"));
+    } else {
+        logger.addEvent(PSTR("Picture written successfully: ") + photoName);
+        status = true;
+    }
+
+    file.close();
+
+    return status;
+}

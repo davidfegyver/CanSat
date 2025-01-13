@@ -64,4 +64,6 @@ public:
   uint16_t getCardFreeMB();
   uint8_t getFreeSpacePercent();
   uint8_t getUsedSpacePercent();
+
+  bool WritePicture(const String &photoName, const uint8_t *photoData, size_t photoLen);
 };
