@@ -300,34 +300,26 @@ bool MicroSd::appendFile(File *i_file, String *i_msg)
   if (!*i_file)
   {
     logger.AddEvent("File not opened");
+    xSemaphoreGive(sdCardMutex);
     return false;
   }
-  else
-  {
-    if (i_file->print(i_msg->c_str()))
-    {
-      if (*i_file)
-      {
-        i_file->flush();
 
-        if (!i_file->getWriteError())
-        {
-          status = true;
-        }
-        else
-        {
-          logger.AddEvent(F("Failed write to file"));
-        }
-      }
-      else
-      {
-        logger.AddEvent(F("File not opened!"));
-      }
+  if (i_file->print(i_msg->c_str()))
+  {
+    i_file->flush();
+
+    if (!i_file->getWriteError())
+    {
+      status = true;
     }
     else
     {
-      logger.AddEvent(F("Failed write to file!"));
+      logger.AddEvent(F("Failed write to file - Write error"));
     }
+  }
+  else
+  {
+    logger.AddEvent(F("Failed write to file"));
   }
 
   xSemaphoreGive(sdCardMutex);
