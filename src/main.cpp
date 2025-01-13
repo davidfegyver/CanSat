@@ -7,6 +7,10 @@ void setup()
     Serial.setDebugOutput(true);
 #endif
 
+#if (DISABLE_BROWNOUT)
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+#endif
+
     EEPROM.begin(EEPROM_SIZE);
 
     sd_card.initCard();
