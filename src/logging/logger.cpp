@@ -1,23 +1,23 @@
 #include "logger.h"
-#include "../micro_sd/micro_sd.h"
+#include "micro_sd/micro_sd.h"
 
 Logger::Logger(String i_FilePath, String i_FileName)
+    : FileName(i_FileName), FilePath(i_FilePath)
 {
-  FileName = i_FileName;
-  FilePath = i_FilePath;
+  AddEvent(PSTR("Logger initialized with path: ") + FilePath + PSTR(", file: ") + FileName);
 }
 
 void Logger::openLogFile()
 {
   sdCard->createFileIfNotExists(FilePath);
 
-  AddEvent(String("") + F("Opening log file: ") + FilePath + "/" + FileName);
+  AddEvent(PSTR("Opening log file: ") + FilePath + PSTR("/") + FileName);
   sdCard->openFile(&LogFile, FilePath + "/" + FileName);
 }
 
 void Logger::closeLogFile()
 {
-  AddEvent(String("") + F("Closing log file: ") + FilePath + "/" + FileName);
+  AddEvent(PSTR("Closing log file: ") + FilePath + "/" + FileName);
   sdCard->closeFile(&LogFile);
 }
 
@@ -36,12 +36,16 @@ void Logger::AddEvent(String msg, bool newLine, bool showTime)
 
   LastLogMsg = "";
   if (showTime)
+  {
     LastLogMsg += getSystemTime() + " - ";
+  }
 
   LastLogMsg += msg;
 
   if (newLine)
+  {
     LastLogMsg += "\n";
+  }
 
 #if (ENABLE_SERIAL_LOGS == true)
   Serial.print(LastLogMsg);
@@ -67,7 +71,7 @@ bool Logger::getTimeSynced()
 void Logger::setTimeSynced(bool i_data)
 {
   TimeSynced = i_data;
-  AddEvent(F("System time: "), getSystemTime());
+  AddEvent(PSTR("System time synced: ") + getSystemTime());
 }
 
 String Logger::getFileName()
@@ -79,7 +83,6 @@ String Logger::getFilePath()
 {
   return FilePath;
 }
-
 
 void Logger::checkMaxLogFileSize()
 {
@@ -94,10 +97,12 @@ void Logger::checkMaxLogFileSize()
       openLogFile();
     }
   }
-  else{
+  else
+  {
     if (FullLogMsg.length() > MaxLogSize)
     {
       FullLogMsg = "";
+      AddEvent(F("In-memory log message cleared due to size limit."));
     }
   }
 }
@@ -110,6 +115,7 @@ String Logger::getSystemTime()
     struct tm timeinfo;
     if (!getLocalTime(&timeinfo))
     {
+      AddEvent(F("Failed to fetch local time."));
       return ret;
     }
 

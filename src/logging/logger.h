@@ -8,25 +8,25 @@ class MicroSd;
 class Logger
 {
 private:
-  MicroSd *sdCard;
-  String FileName = "";
-  String FilePath = "";
+  MicroSd *sdCard = nullptr;
+  String FileName;
+  String FilePath;
   uint16_t MaxLogSize = 1024;
   bool TimeSynced = false;
-  String LastLogMsg = "";
-  String FullLogMsg = "";
+  String LastLogMsg;
+  String FullLogMsg;
   File LogFile;
   SemaphoreHandle_t LogMutex = xSemaphoreCreateMutex();
 
 public:
-  Logger(String, String);
-  ~Logger() {};
+  Logger(String filePath, String fileName);
+  ~Logger() = default;
 
   void openLogFile();
   void closeLogFile();
   bool checkIsLogFileHealthy();
-  void AddEvent(String, bool = true, bool = true);
-  void setTimeSynced(bool);
+  void AddEvent(String message, bool newLine = true, bool showTime = true);
+  void setTimeSynced(bool isSynced);
 
   String getFileName();
   String getFilePath();
@@ -35,5 +35,5 @@ public:
 
   String getSystemTime();
 
-  void connectSdCard(MicroSd *);
+  void connectSdCard(MicroSd *sdCard);
 };
