@@ -17,18 +17,20 @@ void setup()
     SystemLog.connectSdCard(&sd_card);
     SensorLog.connectSdCard(&sd_card);
 
-    SystemLog.AddEvent(F("Init WDG"));
+    SystemCamera.init();
+
+    SystemLog.addEvent(F("Init WDG"));
 
     esp_task_wdt_init(WDG_TIMEOUT, true);
 
     ESP_ERROR_CHECK(esp_task_wdt_add(NULL));
     esp_task_wdt_reset();
 
-    SystemLog.AddEvent("Starting Tasks");
+    SystemLog.addEvent("Starting Tasks");
 
     if (sd_card.getCardHealthy())
     {
-        SystemLog.AddEvent("Creating SdCardHealthCheckTask");
+        SystemLog.addEvent("Creating SdCardHealthCheckTask");
         xTaskCreatePinnedToCore(
             [](void *pvParameters)
             {
@@ -43,7 +45,7 @@ void setup()
         ESP_ERROR_CHECK(esp_task_wdt_add(Task_SdCardHealthCheck));
     }
 
-    SystemLog.AddEvent("Creating FlashLedTask");
+/*     SystemLog.addEvent("Creating FlashLedTask");
     xTaskCreatePinnedToCore(
         [](void *pvParameters)
         {
@@ -56,8 +58,8 @@ void setup()
         &Task_FlashLed,
         0);
     ESP_ERROR_CHECK(esp_task_wdt_add(Task_FlashLed));
-
-    SystemLog.AddEvent("Setup complete");
+ */
+    SystemLog.addEvent("Setup complete");
 }
 
 void loop()
