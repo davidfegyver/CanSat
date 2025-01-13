@@ -8,7 +8,7 @@ void MicroSd::initCard()
   CardHealthy = true;
   CardHealthyOnBoot = true;
 
-  logger.AddEvent(F("Start init micro-SD Card"));
+  logger.AddEvent(F("Initializing micro-SD Card"));
 
   if (!SD_MMC.begin("/sdcard", IS_SD_ONE_LINE))
   {
@@ -18,20 +18,18 @@ void MicroSd::initCard()
     return;
   }
 
-
   CardType = SD_MMC.cardType();
 
-  logger.AddEvent(PSTR("SD Card Type: ") + String(CardType));
   switch (CardType)
   {
   case CARD_MMC:
-    logger.AddEvent(F("MMC"));
+    logger.AddEvent(F("Card Type: MMC"));
     break;
   case CARD_SD:
-    logger.AddEvent(F("SDSC"));
+    logger.AddEvent(F("Card Type: SDSC"));
     break;
   case CARD_SDHC:
-    logger.AddEvent(F("SDHC"));
+    logger.AddEvent(F("Card Type: SDHC"));
     break;
   default:
     logger.AddEvent(F("No/unknown SD Card attached!"));
@@ -44,7 +42,7 @@ void MicroSd::initCard()
 
   if (CardHealthy)
   {
-    logger.AddEvent(F("SD Card initialized successfully!"));
+    logger.AddEvent(F("SD Card initialized successfully"));
   }
   else
   {
@@ -55,11 +53,9 @@ void MicroSd::initCard()
 
 void MicroSd::reinitCard()
 {
-  logger.AddEvent(F("Reinit micro SD card!"));
-  logger.AddEvent(F("Deinit micro SD card"));
+  logger.AddEvent(F("Reinitializing micro-SD Card"));
   SD_MMC.end();
   delay(50);
-  logger.AddEvent(F("Init micro SD card"));
   initCard();
 }
 
@@ -114,19 +110,24 @@ void MicroSd::cardCheckTask(void *pvParameters)
   }
 }
 
+
 bool MicroSd::openFile(File *i_file, String i_path)
 {
   if (!CardHealthy)
   {
+    logger.AddEvent(F("Failed to open file - Card not healthy"));
     return false;
   }
 
   *i_file = SD_MMC.open(i_path.c_str(), FILE_APPEND);
   if (!*i_file)
   {
+    logger.AddEvent(PSTR("Failed to open file: ") + i_path);
     CardHealthy = false;
     return false;
   }
+
+  logger.AddEvent(PSTR("Opened file: ") + i_path);
   return true;
 }
 
@@ -135,6 +136,11 @@ void MicroSd::closeFile(File *i_file)
   if (*i_file)
   {
     i_file->close();
+    logger.AddEvent(F("File closed successfully"));
+  }
+  else
+  {
+    logger.AddEvent(F("Attempted to close an unopened file"));
   }
 }
 
@@ -147,11 +153,11 @@ bool MicroSd::renameFile(String path1, String path2)
 {
   if (!CardHealthy)
   {
+    logger.AddEvent(F("Failed to rename file - Card not healthy"));
     return false;
   }
 
   logger.AddEvent(PSTR("Renaming file: ") + path1 + PSTR(" to ") + path2);
-
   return SD_MMC.rename(path1.c_str(), path2.c_str());
 }
 
@@ -159,16 +165,21 @@ bool MicroSd::deleteFile(String path)
 {
   if (!CardHealthy)
   {
+    logger.AddEvent(F("Failed to delete file - Card not healthy"));
     return false;
   }
 
   logger.AddEvent(PSTR("Deleting file: ") + path);
   return SD_MMC.remove(path.c_str());
 }
+
 uint32_t MicroSd::getFileSize(String path)
 {
   if (!CardHealthy)
+  {
+    logger.AddEvent(F("Failed to get file size - Card not healthy"));
     return 0;
+  }
 
   File file = SD_MMC.open(path.c_str(), FILE_APPEND);
   if (!file)
