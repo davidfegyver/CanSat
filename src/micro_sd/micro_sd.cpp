@@ -110,7 +110,6 @@ void MicroSd::cardCheckTask(void *pvParameters)
   }
 }
 
-
 bool MicroSd::openFile(File *i_file, String i_path)
 {
   if (!CardHealthy)
@@ -184,34 +183,38 @@ uint32_t MicroSd::getFileSize(String path)
   File file = SD_MMC.open(path.c_str(), FILE_APPEND);
   if (!file)
   {
+    logger.AddEvent(PSTR("Failed to open file to get size: ") + path);
     return 0;
   }
-  uint32_t size = file.size();
 
+  uint32_t size = file.size();
   file.close();
 
+  logger.AddEvent(PSTR("File size for ") + path + PSTR(": ") + String(size) + PSTR(" bytes"));
   return size / 1024;
 }
 
 bool MicroSd::createDir(String path)
 {
-    if (!CardHealthy)
+  if (!CardHealthy)
   {
+    logger.AddEvent(F("Failed to create directory - Card not healthy"));
     return false;
   }
 
-  logger.AddEvent(PSTR("CreateDir: ") + path);
+  logger.AddEvent(PSTR("Creating directory: ") + path);
   return SD_MMC.mkdir(path.c_str());
 }
 
 bool MicroSd::removeDir(String path)
 {
-    if (!CardHealthy)
+  if (!CardHealthy)
   {
+    logger.AddEvent(F("Failed to remove directory - Card not healthy"));
     return false;
   }
 
-  logger.AddEvent(PSTR("RemoveDir: ") + path);
+  logger.AddEvent(PSTR("Removing directory: ") + path);
   return SD_MMC.rmdir(path.c_str());
 }
 
@@ -219,42 +222,54 @@ bool MicroSd::checkFile(String path)
 {
   if (!CardHealthy)
   {
+    logger.AddEvent(F("Failed to check file/directory - Card not healthy"));
     return false;
   }
 
-  logger.AddEvent(PSTR("Checking if file/directory exists: ") + path);
-
-  return  SD_MMC.exists(path.c_str());
+  logger.AddEvent(PSTR("Checking existence of file/directory: ") + path);
+  return SD_MMC.exists(path.c_str());
 }
 
 bool MicroSd::createFile(String path)
 {
   if (!CardHealthy)
   {
+    logger.AddEvent(F("Failed to create file - Card not healthy"));
     return false;
   }
 
-  logger.AddEvent(PSTR("CreateFile: ") + path);
-  return SD_MMC.open(path.c_str(), FILE_WRITE);
+  logger.AddEvent(PSTR("Creating file: ") + path);
+  File file = SD_MMC.open(path.c_str(), FILE_WRITE);
+  if (file)
+  {
+    file.close();
+    return true;
+  }
+  logger.AddEvent(PSTR("Failed to create file: ") + path);
+  return false;
 }
 
 bool MicroSd::removeFile(String path)
 {
   if (!CardHealthy)
   {
+    logger.AddEvent(F("Failed to remove file - Card not healthy"));
     return false;
   }
-  return  SD_MMC.remove(path.c_str());
+
+  logger.AddEvent(PSTR("Removing file: ") + path);
+  return SD_MMC.remove(path.c_str());
 }
 
 bool MicroSd::createFileIfNotExists(String path)
 {
   if (!CardHealthy)
   {
+    logger.AddEvent(F("Failed to create file/directory if not exists - Card not healthy"));
     return false;
   }
 
-  logger.AddEvent(PSTR("Create file/directory if not exists: ") + path);
+  logger.AddEvent(PSTR("Creating file/directory if not exists: ") + path);
 
   if (checkFile(path))
   {
@@ -266,7 +281,7 @@ bool MicroSd::createFileIfNotExists(String path)
     return true;
   }
 
-  logger.AddEvent(F("Failed to create file / directory."));
+  logger.AddEvent(PSTR("Failed to create file/directory: ") + path);
   return false;
 }
 
@@ -277,6 +292,7 @@ bool MicroSd::appendFile(File *i_file, String *i_msg)
 
   if (!CardHealthy)
   {
+    logger.AddEvent(F("Failed to append to file - Card not healthy"));
     xSemaphoreGive(sdCardMutex);
     return false;
   }
@@ -321,11 +337,17 @@ bool MicroSd::appendFile(File *i_file, String *i_msg)
 uint16_t MicroSd::fileCount(String dirName, String fileNameFilter)
 {
   if (!CardHealthy)
+  {
+    logger.AddEvent(F("Failed to count files - Card not healthy"));
     return 0;
+  }
 
   File dir = SD_MMC.open(dirName.c_str());
   if (!dir || !dir.isDirectory())
+  {
+    logger.AddEvent(PSTR("Invalid directory: ") + dirName);
     return 0;
+  }
 
   uint16_t fileCount = 0;
   File file = dir.openNextFile();
@@ -338,6 +360,7 @@ uint16_t MicroSd::fileCount(String dirName, String fileNameFilter)
     file = dir.openNextFile();
   }
 
+  logger.AddEvent(PSTR("Files counted in directory ") + dirName + PSTR(": ") + String(fileCount));
   return fileCount;
 }
 
@@ -348,25 +371,37 @@ int MicroSd::countFilesInDir(String path)
 
 bool MicroSd::removeFilesInDir(String path, int maxFiles)
 {
+  if (!CardHealthy)
+  {
+    logger.AddEvent(F("Failed to remove files - Card not healthy"));
+    return false;
+  }
 
   File dir = SD_MMC.open(path.c_str());
   if (!dir || !dir.isDirectory())
   {
+    logger.AddEvent(PSTR("Invalid directory for file removal: ") + path);
     return false;
   }
 
   int fileCount = 0;
   File file = dir.openNextFile();
-
   while (file && fileCount < maxFiles)
   {
     String fileName = path + "/" + file.name();
     if (SD_MMC.remove(fileName.c_str()))
     {
+      logger.AddEvent(PSTR("Removed file: ") + fileName);
       fileCount++;
+    }
+    else
+    {
+      logger.AddEvent(PSTR("Failed to remove file: ") + fileName);
     }
     file = dir.openNextFile();
   }
+
+  logger.AddEvent(PSTR("Total files removed from ") + path + F(": ") + String(fileCount));
   return fileCount > 0;
 }
 
