@@ -25,7 +25,7 @@ public:
   void openLogFile();
   void closeLogFile();
   bool checkIsLogFileHealthy();
-  void AddEvent(String message, bool newLine = true, bool showTime = true);
+  void addEvent(String message, bool newLine = true, bool showTime = true);
   void setTimeSynced(bool isSynced);
 
   String getFileName();

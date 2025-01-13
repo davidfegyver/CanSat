@@ -5,7 +5,7 @@ Led::Led(Logger &i_logger, uint8_t i_pin, uint8_t i_on_state)
 {
   pinMode(pin, OUTPUT);
   turnOff();
-  logger.AddEvent(PSTR("Led initialized with pin: ") + String(i_pin) +
+  logger.addEvent(PSTR("Led initialized with pin: ") + String(i_pin) +
                   PSTR(", on state: ") + String(i_on_state));
 }
 

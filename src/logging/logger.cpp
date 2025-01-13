@@ -4,20 +4,20 @@
 Logger::Logger(String i_FilePath, String i_FileName)
     : FileName(i_FileName), FilePath(i_FilePath)
 {
-  AddEvent(PSTR("Logger initialized with path: ") + FilePath + PSTR(", file: ") + FileName);
+  addEvent(PSTR("Logger initialized with path: ") + FilePath + PSTR(", file: ") + FileName);
 }
 
 void Logger::openLogFile()
 {
   sdCard->createFileIfNotExists(FilePath);
 
-  AddEvent(PSTR("Opening log file: ") + FilePath + PSTR("/") + FileName);
+  addEvent(PSTR("Opening log file: ") + FilePath + PSTR("/") + FileName);
   sdCard->openFile(&LogFile, FilePath + "/" + FileName);
 }
 
 void Logger::closeLogFile()
 {
-  AddEvent(PSTR("Closing log file: ") + FilePath + "/" + FileName);
+  addEvent(PSTR("Closing log file: ") + FilePath + "/" + FileName);
   sdCard->closeFile(&LogFile);
 }
 
@@ -30,7 +30,7 @@ bool Logger::checkIsLogFileHealthy()
   return false;
 }
 
-void Logger::AddEvent(String msg, bool newLine, bool showTime)
+void Logger::addEvent(String msg, bool newLine, bool showTime)
 {
   xSemaphoreTake(LogMutex, portMAX_DELAY);
 
@@ -71,7 +71,7 @@ bool Logger::getTimeSynced()
 void Logger::setTimeSynced(bool i_data)
 {
   TimeSynced = i_data;
-  AddEvent(PSTR("System time synced: ") + getSystemTime());
+  addEvent(PSTR("System time synced: ") + getSystemTime());
 }
 
 String Logger::getFileName()
@@ -102,7 +102,7 @@ void Logger::checkMaxLogFileSize()
     if (FullLogMsg.length() > MaxLogSize)
     {
       FullLogMsg = "";
-      AddEvent(F("In-memory log message cleared due to size limit."));
+      addEvent(F("In-memory log message cleared due to size limit."));
     }
   }
 }
@@ -115,7 +115,7 @@ String Logger::getSystemTime()
     struct tm timeinfo;
     if (!getLocalTime(&timeinfo))
     {
-      AddEvent(F("Failed to fetch local time."));
+      addEvent(F("Failed to fetch local time."));
       return ret;
     }
 
