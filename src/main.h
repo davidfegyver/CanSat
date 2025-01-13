@@ -28,3 +28,4 @@ Camera SystemCamera(SystemLog);
 
 TaskHandle_t Task_FlashLed;
 TaskHandle_t Task_SdCardHealthCheck;
+TaskHandle_t Task_Telemetry;

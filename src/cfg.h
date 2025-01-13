@@ -68,6 +68,7 @@ https://github.com/espressif/arduino-esp32/blob/master/libraries/SD_MMC/README.m
 /* -------- Tasks -------- */
 
 
+#define TASK_TELEMETRY 30000
 #define WDG_TIMEOUT 40000
 #define TASK_SDCARD 25000
 

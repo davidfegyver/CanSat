@@ -45,20 +45,50 @@ void setup()
         ESP_ERROR_CHECK(esp_task_wdt_add(Task_SdCardHealthCheck));
     }
 
-/*     SystemLog.addEvent("Creating FlashLedTask");
+    /*     SystemLog.addEvent("Creating FlashLedTask");
+        xTaskCreatePinnedToCore(
+            [](void *pvParameters)
+            {
+                flash_led.blinkingTask(pvParameters);
+            },
+            "FlashLedTask",
+            2048,
+            NULL,
+            2,
+            &Task_FlashLed,
+            0);
+        ESP_ERROR_CHECK(esp_task_wdt_add(Task_FlashLed));
+     */
+
+    SystemLog.addEvent("Creating TelemetryTask");
     xTaskCreatePinnedToCore(
         [](void *pvParameters)
         {
-            flash_led.blinkingTask(pvParameters);
+            SystemLog.addEvent(PSTR("Starting Telemetry task on core: ") + String(xPortGetCoreID()));
+            TickType_t xLastWakeTime = xTaskGetTickCount();
+
+            while (1)
+            {
+                esp_task_wdt_reset();
+                SystemLog.addEvent(PSTR("Free RAM: ") + String(ESP.getFreeHeap()) + PSTR(" B"));
+                SystemLog.addEvent(PSTR("Min Free RAM: ") + String(ESP.getMinFreeHeap()) + PSTR(" B"));
+                SystemLog.addEvent(PSTR("Free PSRAM: ") + String(ESP.getFreePsram()) + PSTR(" B"));
+                SystemLog.addEvent(PSTR("Min Free PSRAM: ") + String(ESP.getMinFreePsram()) + PSTR(" B"));
+                SystemLog.addEvent(PSTR("MCU Temperature: ") + String(temperatureRead()) + PSTR(" *C"));
+
+                esp_task_wdt_reset();
+
+                vTaskDelayUntil(&xLastWakeTime, TASK_TELEMETRY / portTICK_PERIOD_MS);
+            }
         },
-        "FlashLedTask",
+        "TelemetryTask",
         2048,
         NULL,
         2,
-        &Task_FlashLed,
+        &Task_Telemetry,
         0);
-    ESP_ERROR_CHECK(esp_task_wdt_add(Task_FlashLed));
- */
+    ESP_ERROR_CHECK(esp_task_wdt_add(Task_Telemetry));
+
     SystemLog.addEvent("Setup complete");
 }
 
