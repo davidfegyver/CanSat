@@ -1,9 +1,7 @@
 #include "micro_sd.h"
 #include "logging/logger.h"
 
-MicroSd::MicroSd(Logger &i_logger) : logger(i_logger)
-{
-}
+MicroSd::MicroSd(Logger &i_logger) : logger(i_logger) {}
 
 void MicroSd::initCard()
 {
@@ -68,9 +66,7 @@ void MicroSd::reinitCard()
 void MicroSd::updateCardUsageStatus()
 {
   if (!CardHealthy)
-  {
     return;
-  }
 
   CardSizeMB = SD_MMC.cardSize() / (1024 * 1024);
   CardTotalMB = SD_MMC.totalBytes() / (1024 * 1024);
@@ -79,40 +75,41 @@ void MicroSd::updateCardUsageStatus()
   FreeSpacePercent = (CardFreeMB * 100) / CardSizeMB;
   UsedSpacePercent = 100 - FreeSpacePercent;
 
-  logger.AddEvent(PSTR("Card size: ") + String(CardSizeMB) + F(" MB, Total: ") + String(CardTotalMB) + F(" MB, Used: ") + String(CardUsedMB) + F(" MB, Free: ") + String(CardFreeMB) + F(" MB, Free: ") + String(FreeSpacePercent) + F(" %"));
+  logger.AddEvent(PSTR("Card usage - Size: ") + String(CardSizeMB) + F(" MB, Used: ") + String(CardUsedMB) + F(" MB, Free: ") + String(CardFreeMB) + F(" MB, Free: ") + String(FreeSpacePercent) + F("%"));
 }
 
 void MicroSd::checkCardHealth()
 {
-  // miau todo chcek if card is removed
+  if (!CardHealthy)
+    return;
 
   updateCardUsageStatus();
 
   if (CardSizeMB == 0 || CardTotalMB == 0 || FreeSpacePercent <= 5)
   {
-    logger.AddEvent(F("SD Card is not healthy! Low space!"));
+    logger.AddEvent(F("SD Card health check failed: Low space or invalid size"));
     CardHealthy = false;
-    return;
   }
 }
 
 void MicroSd::cardCheckTask(void *pvParameters)
 {
-  logger.AddEvent(PSTR("MicroSdCard check task. core: ") + String(xPortGetCoreID()));
+  logger.AddEvent(PSTR("Starting SD card health check task on core ") + String(xPortGetCoreID()));
   TickType_t xLastWakeTime = xTaskGetTickCount();
 
-  while (1)
+  while (true)
   {
     esp_task_wdt_reset();
     checkCardHealth();
-    logger.AddEvent(PSTR("Card healthy: ") + String(CardHealthy));
+
+    logger.AddEvent(PSTR("Card healthy status: ") + String(CardHealthy));
+
     if (!CardHealthy && CardHealthyOnBoot)
     {
       reinitCard();
     }
 
     esp_task_wdt_reset();
-
     vTaskDelayUntil(&xLastWakeTime, TASK_SDCARD / portTICK_PERIOD_MS);
   }
 }
