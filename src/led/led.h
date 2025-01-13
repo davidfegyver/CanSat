@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Arduino.h>
-#include "../logging/logger.h"
+#include "logging/logger.h"
 
 class Led
 {
@@ -11,11 +11,11 @@ protected:
   Logger &logger;
 
 public:
-  Led(Logger &, uint8_t, uint8_t);
-  ~Led() {};
+  Led(Logger &logger, uint8_t pin, uint8_t on_state);
+  ~Led() = default;
 
   void toggle();
-  void set(bool);
+  void set(bool state);
   bool get();
   void turnOn();
   void turnOff();
