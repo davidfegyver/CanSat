@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <esp_task_wdt.h>
 #include "Led.h"
-#include "../logging/logger.h"
+#include "logging/logger.h"
 
 class BlinkingLed : public Led
 {
@@ -12,12 +12,12 @@ private:
     uint32_t onTime;
 
 public:
-    BlinkingLed(Logger &, uint8_t, uint8_t, uint32_t, uint32_t);
-    ~BlinkingLed() {};
+    BlinkingLed(Logger &logger, uint8_t pin, uint8_t on_state, uint32_t off_time = 500, uint32_t on_time = 500);
+    ~BlinkingLed() = default;
 
-    void setTimes(uint32_t, uint32_t);
+    void setTimes(uint32_t off_time, uint32_t on_time);
     uint32_t getTimer();
-    void blinkingTask(void *);
+    void blinkingTask(void *pvParameters);
     uint32_t getOffTime();
     uint32_t getOnTime();
 };
