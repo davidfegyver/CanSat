@@ -2,13 +2,19 @@
 
 void setup()
 {
+    SystemLog.addEvent(F("Setup started"));
+
 #if (ENABLE_SERIAL_LOGS == true)
     Serial.begin(115200);
     Serial.setDebugOutput(true);
+
+    SystemLog.addEvent(F("Serial logs enabled"));
 #endif
 
 #if (DISABLE_BROWNOUT)
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+
+    SystemLog.addEvent(F("Brownout detector disabled"));
 #endif
 
     EEPROM.begin(EEPROM_SIZE);

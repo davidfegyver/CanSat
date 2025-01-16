@@ -131,6 +131,7 @@ void Logger::connectSdCard(MicroSd *i_sdCard)
   sdCard = i_sdCard;
   if (sdCard && sdCard->getCardHealthy())
   {
+    addEvent(PSTR("SD card connected."));
     openLogFile();
 
     if (checkIsLogFileHealthy())
