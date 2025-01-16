@@ -16,6 +16,7 @@
 
 #include "camera/camera.h"
 
+#include "tasks/tasks.h"
 
 #include "cfg.h"
 
@@ -26,6 +27,4 @@ BlinkingLed flash_led(SystemLog, FLASH_GPIO, FLASH_ON_STATUS, 200, 500);
 MicroSd sd_card(SystemLog);
 Camera SystemCamera(SystemLog);
 
-TaskHandle_t Task_FlashLed;
-TaskHandle_t Task_SdCardHealthCheck;
-TaskHandle_t Task_Telemetry;
+Tasks tasks(SystemLog);
