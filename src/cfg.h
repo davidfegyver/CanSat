@@ -18,6 +18,7 @@
 
 #define PHOTO_QUALITY 10
 #define FRAME_SIZE 0
+#define MAX_CAMERA_FAILS 5
 
 
 /* -------- MCU config -------- */
@@ -47,6 +48,10 @@ https://github.com/espressif/arduino-esp32/blob/master/libraries/SD_MMC/README.m
 
 /* -------- Photos config -------- */
 
+#define PHOTO_FOLDER "/photos"
+#define PHOTO_PREFIX "photo"
+#define PHOTO_SUFFIX ".jpg"
+
 
 /* -------- EEPROM config -------- */
 
@@ -68,9 +73,10 @@ https://github.com/espressif/arduino-esp32/blob/master/libraries/SD_MMC/README.m
 /* -------- Tasks -------- */
 
 
-#define TASK_TELEMETRY 30000
-#define WDG_TIMEOUT 40000
-#define TASK_SDCARD 25000
+#define TASK_TELEMETRY 10000
+#define WDG_TIMEOUT 30000
+#define TASK_SDCARD 10000
+#define TASK_TIMELAPSE 500
 
 
 /* -------- Basic config -------- */
