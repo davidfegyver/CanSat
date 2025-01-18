@@ -41,7 +41,7 @@ uint32_t BlinkingLed::getTimer()
 
 void BlinkingLed::blinkingTask(void *pvParameters)
 {
-  logger.addEvent(PSTR("BlinkingLed task started on core: ") + String(xPortGetCoreID()));
+  logger.addEvent(PSTR("Starting Blinking Led task on core: ") + String(xPortGetCoreID()));
 
   TickType_t xLastWakeTime = xTaskGetTickCount();
 

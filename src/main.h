@@ -10,6 +10,7 @@
 #include "camera/camera.h"
 #include "tasks/tasks.h"
 #include "cfg.h"
+#include "network/network.h"
 
 #include "esp32/rom/rtc.h"
 #include "esp_task_wdt.h"
@@ -23,3 +24,5 @@ MicroSd sd_card(SystemLog);
 Camera SystemCamera(SystemLog);
 
 Tasks tasks(SystemLog);
+
+Network network(SystemLog);

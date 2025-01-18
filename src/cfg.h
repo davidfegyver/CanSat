@@ -20,12 +20,10 @@
 #define FRAME_SIZE 0
 #define MAX_CAMERA_FAILS 5
 
-
 /* -------- MCU config -------- */
 #define DISABLE_BROWNOUT true
 
 /* -------- OTA config -------- */
-
 
 /* -------- SD card config -------- */
 
@@ -45,13 +43,19 @@ https://github.com/espressif/arduino-esp32/blob/master/libraries/SD_MMC/README.m
 
 /* -------- WIFI config -------- */
 
+#define WIFI_SSID "CanBus - CanSat"
+#define WIFI_PASSWORD "HyperSecure"
+#define WIFI_CHANNEL 1
+#define WIFI_MAX_CLIENTS 1
+#define WIFI_IP {1, 3, 3, 7}
+#define WIFI_SUBNET {255, 255, 255, 0}
+#define DEVICE_HOSTNAME "CanSat"
 
 /* -------- Photos config -------- */
 
 #define PHOTO_FOLDER "/photos"
 #define PHOTO_PREFIX "photo"
 #define PHOTO_SUFFIX ".jpg"
-
 
 /* -------- EEPROM config -------- */
 
@@ -69,15 +73,12 @@ https://github.com/espressif/arduino-esp32/blob/master/libraries/SD_MMC/README.m
 
 /* -------- Webserver config -------- */
 
-
 /* -------- Tasks -------- */
-
 
 #define TASK_TELEMETRY 10000
 #define WDG_TIMEOUT 30000
 #define TASK_SDCARD 10000
 #define TASK_TIMELAPSE 500
-
 
 /* -------- Basic config -------- */
 #define SW_BUILD __DATE__ " " __TIME__

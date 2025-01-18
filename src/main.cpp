@@ -19,6 +19,7 @@ void setup()
 
     SystemCamera.init();
     sd_card.initCard();
+    network.init();
 
     if (sd_card.getCardHealthy())
     {
@@ -26,6 +27,8 @@ void setup()
         SensorLog.connectSdCard(&sd_card);
         SystemCamera.connectSdCard(&sd_card);
     }
+
+
 
     tasks.init();
     tasks.createTimelapseTask(&SystemCamera);
