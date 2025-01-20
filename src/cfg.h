@@ -73,6 +73,7 @@ https://github.com/espressif/arduino-esp32/blob/master/libraries/SD_MMC/README.m
 
 /* -------- Webserver config -------- */
 #define WEB_SERVER_PORT 8080
+#define WEB_CACHE_INTERVAL 60000
 
 /* -------- Tasks -------- */
 

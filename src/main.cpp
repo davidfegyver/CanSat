@@ -27,7 +27,11 @@ void setup()
         SystemLog.connectSdCard(&sd_card);
         SensorLog.connectSdCard(&sd_card);
         SystemCamera.connectSdCard(&sd_card);
+        
+        network.connectSdCard(&sd_card);
     }
+
+    network.connectCamera(&SystemCamera);
 
 
 

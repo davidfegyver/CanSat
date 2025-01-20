@@ -6,6 +6,7 @@
 #include "micro_sd/micro_sd.h"
 #include "camera/camera.h"
 
+#include "webpages.h"
 
 #include <ESPAsyncWebServer.h>
 
@@ -20,7 +21,6 @@ private:
 
   void setupRoutes();
   
-  void handleRoot(AsyncWebServerRequest *request);
   void handleNotFound(AsyncWebServerRequest *request);
 
 public:
