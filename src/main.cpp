@@ -19,6 +19,7 @@ void setup()
 
     SystemCamera.init();
     sd_card.initCard();
+    
     network.init();
 
     if (sd_card.getCardHealthy())
@@ -31,7 +32,8 @@ void setup()
 
 
     tasks.init();
-    tasks.createTimelapseTask(&SystemCamera);
+    //tasks.createTimelapseTask(&SystemCamera);
+    //tasks.createLedBlinkTask(&flash_led);
 
     SystemLog.addEvent(F("Setup complete"));
 }
