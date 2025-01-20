@@ -111,6 +111,9 @@ void Camera::capturePhoto()
     if (FrameBuffer)
     {
         esp_camera_fb_return(FrameBuffer);
+        // without this, a previous photo is returned
+        FrameBuffer = esp_camera_fb_get();
+        esp_camera_fb_return(FrameBuffer);
     }
 
     int attempts = 0;
