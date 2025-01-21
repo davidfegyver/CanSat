@@ -27,7 +27,7 @@ public:
   Network(Logger &i_logger);
 
 
-  AsyncWebServer webserver = AsyncWebServer(WEB_SERVER_PORT);
+  AsyncWebServer webserver{WEB_SERVER_PORT};
 
   void init();
 
