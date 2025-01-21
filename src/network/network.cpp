@@ -75,9 +75,7 @@ void Network::setupRoutes()
                {
     if (camera) {
       camera -> capturePhoto();
-
-
-camera_fb_t * fb = camera -> getPhotoFrameBuffer();
+      camera_fb_t * fb = camera -> getPhotoFrameBuffer();
 
       if (!fb) {
         request -> send(500, "text/plain", "No photo available");
@@ -98,6 +96,38 @@ camera_fb_t * fb = camera -> getPhotoFrameBuffer();
     } else {
       request -> send(500, "text/plain", "Camera not connected");
     } });
+
+  webserver.on("/action/getcrypto", HTTP_GET, [this](AsyncWebServerRequest *request)
+               {
+    String response = "Crypto test\n";
+    Crypto crypto;
+
+                camera_fb_t * fb = camera -> getPhotoFrameBuffer();
+
+    if (!fb) {
+      request -> send(500, "text/plain", "No photo available");
+      return;
+    }
+
+    std::vector<uint8_t> data(fb -> buf, fb -> buf + fb -> len);
+
+    int n = crypto.calculate_n(data.size(), 1, 32);
+
+    response += "n: " + String(n) + "\n";
+
+    std::vector<std::vector<uint8_t>> split_data = crypto.split_vector(data, n);
+
+    for (int i = 0; i < n; i++) {
+      std::vector<uint8_t> hash = crypto.sha256(split_data[i]);
+
+      response += "Hash " + String(i) + ": ";
+      for (int j = 0; j < hash.size(); j++) {
+        response += String(hash[j], HEX) + " ";
+      }
+      response += "\n";
+    }
+    
+    request->send(200, "text/plain", response); });
 
   webserver.onNotFound([this](AsyncWebServerRequest *request)
                        { handleNotFound(request); });

@@ -1,10 +1,12 @@
 #include <Arduino.h>
-#include <FS.h>
 #include <WiFi.h>
 #include "cfg.h"
 #include "logging/logger.h"
 #include "micro_sd/micro_sd.h"
 #include "camera/camera.h"
+
+#include "crypto/crypto.h"
+#include <vector>
 
 #include "webpages.h"
 
