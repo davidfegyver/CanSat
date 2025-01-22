@@ -52,3 +52,39 @@ void BlinkingLed::blinkingTask(void *pvParameters)
     vTaskDelayUntil(&xLastWakeTime, getTimer() / portTICK_PERIOD_MS);
   }
 }
+
+void BlinkingLed::createTask()
+{
+  logger.addEvent(F("Creating LED Blink Task"));
+  
+  xTaskCreatePinnedToCore(
+      [](void *pvParameters)
+      {
+        BlinkingLed *flash_led = static_cast<BlinkingLed *>(pvParameters);
+        flash_led->blinkingTask(pvParameters);
+      },
+      "LedBlinkTask",
+      2048,
+      this,
+      1,
+      &taskHandle,
+      0);
+
+  ESP_ERROR_CHECK(esp_task_wdt_add(taskHandle));
+
+
+
+}
+
+void BlinkingLed::suspendTask()
+{
+  vTaskSuspend(taskHandle);
+  turnOff();
+  logger.addEvent(F("LED Blink Task suspended"));
+}
+
+void BlinkingLed::resumeTask()
+{
+  vTaskResume(taskHandle);
+  logger.addEvent(F("LED Blink Task resumed"));
+}

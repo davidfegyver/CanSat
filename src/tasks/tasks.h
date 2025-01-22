@@ -15,7 +15,6 @@ public:
 
     void init();
     void createSdCardHealthCheckTask(MicroSd *sdCard);
-    void createLedBlinkTask(BlinkingLed *flash_led);
     void createTelemetryTask();
     void createTimelapseTask(Camera *camera);
 

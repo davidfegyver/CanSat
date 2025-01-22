@@ -31,27 +31,6 @@ void Tasks::createSdCardHealthCheckTask(MicroSd *sdCard)
     ESP_ERROR_CHECK(esp_task_wdt_add(Task_SdCardHealthCheck));
 }
 
-void Tasks::createLedBlinkTask(BlinkingLed *flash_led)
-{
-    TaskHandle_t Task_LedBlink;
-    logger.addEvent(F("Creating LED Blink Task"));
-
-    xTaskCreatePinnedToCore(
-        [](void *pvParameters)
-        {
-            BlinkingLed *flash_led = static_cast<BlinkingLed *>(pvParameters);
-            flash_led->blinkingTask(pvParameters);
-        },
-        "LedBlinkTask",
-        2048,
-        flash_led,
-        1,
-        &Task_LedBlink,
-        0);
-
-    ESP_ERROR_CHECK(esp_task_wdt_add(Task_LedBlink));
-}
-
 void Tasks::createTelemetryTask()
 {
     TaskHandle_t Task_Telemetry;
