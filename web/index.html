@@ -2,9 +2,47 @@
 <html>
 
 <head>
-    <title>Hello</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CanSat debug controller</title>
+
+    <link href="./styles.css" rel="stylesheet">
 </head>
 
 <body>
-    <h1>Hello, World!</h1>
+    <h1>CanSat debug controller</h1>
+
+
+    <div class="section">
+        <h2>Camera Controls</h2>
+        <div class="buttons">
+            <button class="button" onclick="control('camera/capture')">Capture Image</button>
+            <button class="button" onclick="showImage('/latest.jpg')">Get Latest Image</button>
+            <button class="button" onclick="showImage('/capture.jpg')">Capture & Show Image</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Flash LED Controls</h2>
+        <div class="buttons">
+            <button class="button" onclick="control('led/toggle')">Toggle LED</button>
+            <button class="button" onclick="control('led/blink/suspend')">Suspend LED Blink</button>
+            <button class="button" onclick="control('led/blink/resume')">Resume LED Blink</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Other Functions</h2>
+        <div class="buttons">
+            <button class="button" onclick="control('getcrypto')">Get Crypto Data</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Output</h2>
+        <div id="output"></div>
+    </div>
+
+    <script src="./script.js"></script>
 </body>
+
+</html>

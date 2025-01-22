@@ -7,5 +7,5 @@ void setupStaticFiles(AsyncWebServer& server);
 void handleCacheRequest(AsyncWebServerRequest* request, const char* contentType, const char* data);
 
 extern const char index_html[];
-extern const char index_js[];
+extern const char script_js[];
 extern const char styles_css[];
