@@ -32,12 +32,14 @@ void setup()
     }
 
     network.connectCamera(&SystemCamera);
+    network.connectBlinkingLed(&flash_led);
 
 
 
     tasks.init();
     //tasks.createTimelapseTask(&SystemCamera);
-    //tasks.createLedBlinkTask(&flash_led);
+    flash_led.createTask();
+
 
     SystemLog.addEvent(F("Setup complete"));
 }

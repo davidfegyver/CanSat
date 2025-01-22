@@ -33,6 +33,11 @@ void Network::connectSdCard(MicroSd *i_sdCard)
   sdCard = i_sdCard;
 }
 
+void Network::connectBlinkingLed(BlinkingLed *i_led)
+{
+  led = i_led;
+}
+
 void Network::setupRoutes()
 {
   setupStaticFiles(webserver);
@@ -128,6 +133,33 @@ void Network::setupRoutes()
     }
     
     request->send(200, "text/plain", response); });
+
+  webserver.on("/action/led/toggle", HTTP_GET, [this](AsyncWebServerRequest *request)
+               {
+      if (led) {
+        led -> toggle();
+        request -> send(200, "text/plain", "Led toggled");
+        return;
+      } 
+        request -> send(500, "text/plain", "Led not connected"); });
+
+  webserver.on("/action/led/blink/suspend", HTTP_GET, [this](AsyncWebServerRequest *request)
+               {
+        if (led) {
+          led -> suspendTask();
+          request -> send(200, "text/plain", "Led blinking suspended");
+          return;
+        } 
+          request -> send(500, "text/plain", "Led not connected"); });
+
+  webserver.on("/action/led/blink/resume", HTTP_GET, [this](AsyncWebServerRequest *request)
+               {
+          if (led) {
+            led -> resumeTask();
+            request -> send(200, "text/plain", "Led blinking resumed");
+            return;
+          } 
+            request -> send(500, "text/plain", "Led not connected"); });
 
   webserver.onNotFound([this](AsyncWebServerRequest *request)
                        { handleNotFound(request); });

@@ -6,6 +6,8 @@
 #include "camera/camera.h"
 
 #include "crypto/crypto.h"
+#include "led/blinkingLed.h"
+
 #include <vector>
 
 #include "webpages.h"
@@ -20,6 +22,7 @@ private:
   
   Camera *camera = nullptr;
   MicroSd *sdCard = nullptr;
+  BlinkingLed *led = nullptr;
 
   void setupRoutes();
   
@@ -35,4 +38,5 @@ public:
 
   void connectCamera(Camera *camera);
   void connectSdCard(MicroSd *sdCard);
+  void connectBlinkingLed(BlinkingLed *led);
 };
