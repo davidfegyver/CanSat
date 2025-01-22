@@ -42,7 +42,7 @@ void Network::setupRoutes()
 {
   setupStaticFiles(webserver);
 
-  webserver.on("/actions/capturePhoto", HTTP_POST, [this](AsyncWebServerRequest *request)
+  webserver.on("/action/camera/capture", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
     if (camera) {
       camera -> capturePhoto();
