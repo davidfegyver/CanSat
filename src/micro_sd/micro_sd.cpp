@@ -462,3 +462,27 @@ bool MicroSd::WritePicture(const String &photoName, const uint8_t *photoData, si
 
     return status;
 }
+
+void MicroSd::sendFileToClient(AsyncWebServerRequest *request, const String &path) {
+    if (!CardHealthy) {
+        logger.addEvent(F("Failed to send file to client - Card not healthy"));
+        request->send(500, "text/plain", "SD card not healthy");
+        return;
+    }
+
+    File file = SD_MMC.open(path, FILE_READ);
+
+    if (!file) {
+        logger.addEvent(PSTR("Failed to send file to client - Could not open file: ") + path);
+        request->send(500, "text/plain", "Failed to open file");
+        return;
+    }
+
+    AsyncWebServerResponse *response = request->beginChunkedResponse("application/octet-stream", [file](uint8_t *buffer, size_t maxLen, size_t index) mutable -> size_t {
+        size_t chunkSize = file.read(buffer, maxLen);
+        return chunkSize;
+    });
+
+    response->addHeader("Content-Disposition", "attachment; filename=" + path);
+    request->send(response);
+}

@@ -69,7 +69,7 @@ https://github.com/espressif/arduino-esp32/blob/master/libraries/SD_MMC/README.m
 #define SENSORLOG_FILENAME "Sensors.log"
 #define LOGS_FILE_PATH "/logs"
 #define LOGS_MAX_SIZE 1024
-#define ENABLE_SERIAL_LOGS true
+#define ENABLE_SERIAL_LOGS false
 
 /* -------- Webserver config -------- */
 #define WEB_SERVER_PORT 8080

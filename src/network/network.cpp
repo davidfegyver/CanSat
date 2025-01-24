@@ -163,6 +163,11 @@ void Network::setupRoutes()
 
   webserver.onNotFound([this](AsyncWebServerRequest *request)
                        { handleNotFound(request); });
+
+  webserver.on("/System.log", HTTP_GET, [this](AsyncWebServerRequest *request)
+               {
+                  sdCard -> sendFileToClient(request, logger.getFilePath() + "/" + logger.getFileName());
+});
 }
 
 void Network::handleNotFound(AsyncWebServerRequest *request)

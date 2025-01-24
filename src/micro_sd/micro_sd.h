@@ -5,6 +5,7 @@
 #include <SD_MMC.h>
 #include <esp_task_wdt.h>
 
+#include "EspAsyncWebServer.h"
 #include "cfg.h"
 
 class Logger;
@@ -66,4 +67,5 @@ public:
   uint8_t getUsedSpacePercent();
 
   bool WritePicture(const String &photoName, const uint8_t *photoData, size_t photoLen);
+  void sendFileToClient(AsyncWebServerRequest *, const String &); 
 };

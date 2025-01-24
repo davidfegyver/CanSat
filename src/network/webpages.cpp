@@ -52,6 +52,7 @@ const char index_html[] PROGMEM = R"rawliteral(
         <h2>Other Functions</h2>
         <div class="buttons">
             <button class="button" onclick="control('getcrypto')">Get Crypto Data</button>
+            <a href="System.log" download="System.log" class="button">Download System Log</a>
         </div>
     </div>
 
