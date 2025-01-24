@@ -40,12 +40,13 @@ void setup()
     //tasks.createTimelapseTask(&SystemCamera);
     flash_led.createTask();
 
-
+    lora.begin();
     SystemLog.addEvent(F("Setup complete"));
 }
 
 void loop()
 {
     esp_task_wdt_reset();
+    lora.radioTransmit("Hello World");
     delay(1000);
 }

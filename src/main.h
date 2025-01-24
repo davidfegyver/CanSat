@@ -16,6 +16,8 @@
 #include "esp_task_wdt.h"
 #include "esp32-hal-cpu.h"
 
+#include "lora/lora.h"
+
 Logger SystemLog(LOGS_FILE_PATH, SYSTEMLOG_FILENAME);
 Logger SensorLog(LOGS_FILE_PATH, SENSORLOG_FILENAME);
 
@@ -26,3 +28,4 @@ Camera SystemCamera(SystemLog);
 Tasks tasks(SystemLog);
 
 Network network(SystemLog);
+Lora lora(SystemLog, Serial1);

@@ -205,3 +205,8 @@ void Network::handleNotFound(AsyncWebServerRequest *request)
 {
   request->send(404, "text/plain", "Not found");
 }
+
+void Network::connectLora(Lora *i_lora)
+{
+  lora = i_lora;
+}

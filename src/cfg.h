@@ -69,7 +69,7 @@ https://github.com/espressif/arduino-esp32/blob/master/libraries/SD_MMC/README.m
 #define SENSORLOG_FILENAME "Sensors.log"
 #define LOGS_FILE_PATH "/logs"
 #define LOGS_MAX_SIZE 1024
-#define ENABLE_SERIAL_LOGS false
+#define ENABLE_SERIAL_LOGS true
 
 /* -------- Webserver config -------- */
 #define WEB_SERVER_PORT 8080
@@ -85,3 +85,12 @@ https://github.com/espressif/arduino-esp32/blob/master/libraries/SD_MMC/README.m
 /* -------- Basic config -------- */
 #define SW_BUILD __DATE__ " " __TIME__
 #define SERIAL_BAUDRATE 115200
+
+/* ------- LoRa config -------- */
+#define LORA_BAUDRATE 115200
+#define LORA_RX 12
+#define LORA_TX 13
+#define LORA_FREQ_MHZ 868.5
+#define LORA_POWER 20
+#define LORA_PABOOST "off"
+#define LORA_CRC "off"

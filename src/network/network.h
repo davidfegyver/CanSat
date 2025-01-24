@@ -13,6 +13,7 @@
 #include "webpages.h"
 
 #include <ESPAsyncWebServer.h>
+#include "lora/lora.h"
 
 
 class Network
@@ -23,6 +24,7 @@ private:
   Camera *camera = nullptr;
   MicroSd *sdCard = nullptr;
   BlinkingLed *led = nullptr;
+  Lora *lora = nullptr;
 
   void setupRoutes();
   
@@ -39,4 +41,5 @@ public:
   void connectCamera(Camera *camera);
   void connectSdCard(MicroSd *sdCard);
   void connectBlinkingLed(BlinkingLed *led);
+  void connectLora(Lora *lora);
 };
