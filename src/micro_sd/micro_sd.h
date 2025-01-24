@@ -8,6 +8,9 @@
 #include "EspAsyncWebServer.h"
 #include "cfg.h"
 
+#include "ff.h"
+#include "vfs_fat_internal.h"
+
 class Logger;
 
 class MicroSd
@@ -68,4 +71,5 @@ public:
 
   bool WritePicture(const String &photoName, const uint8_t *photoData, size_t photoLen);
   void sendFileToClient(AsyncWebServerRequest *, const String &); 
+  void formatCard();
 };

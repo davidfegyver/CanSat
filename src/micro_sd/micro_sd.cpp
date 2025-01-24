@@ -434,55 +434,97 @@ uint8_t MicroSd::getUsedSpacePercent()
   return UsedSpacePercent;
 }
 
-bool MicroSd::WritePicture(const String &photoName, const uint8_t *photoData, size_t photoLen) {
-    if (!CardHealthy) {
-        logger.addEvent(F("Failed to write picture - Card not healthy"));
-        return false;
-    }
+bool MicroSd::WritePicture(const String &photoName, const uint8_t *photoData, size_t photoLen)
+{
+  if (!CardHealthy)
+  {
+    logger.addEvent(F("Failed to write picture - Card not healthy"));
+    return false;
+  }
 
-    bool status = false;
+  bool status = false;
 
-    File file = SD_MMC.open(photoName, FILE_WRITE);
+  File file = SD_MMC.open(photoName, FILE_WRITE);
 
-    if (!file) {
-        logger.addEvent(PSTR("Failed to write picture - Could not open file: ") + photoName);
-        return status;
-    }
-
-    size_t bytesWritten = file.write(photoData, photoLen);
-
-    if (bytesWritten != photoLen) {
-        logger.addEvent(F("Failed to write picture - Error while writing to file"));
-    } else {
-        logger.addEvent(PSTR("Picture written successfully: ") + photoName);
-        status = true;
-    }
-
-    file.close();
-
+  if (!file)
+  {
+    logger.addEvent(PSTR("Failed to write picture - Could not open file: ") + photoName);
     return status;
+  }
+
+  size_t bytesWritten = file.write(photoData, photoLen);
+
+  if (bytesWritten != photoLen)
+  {
+    logger.addEvent(F("Failed to write picture - Error while writing to file"));
+  }
+  else
+  {
+    logger.addEvent(PSTR("Picture written successfully: ") + photoName);
+    status = true;
+  }
+
+  file.close();
+
+  return status;
 }
 
-void MicroSd::sendFileToClient(AsyncWebServerRequest *request, const String &path) {
-    if (!CardHealthy) {
-        logger.addEvent(F("Failed to send file to client - Card not healthy"));
-        request->send(500, "text/plain", "SD card not healthy");
-        return;
-    }
+void MicroSd::sendFileToClient(AsyncWebServerRequest *request, const String &path)
+{
+  if (!CardHealthy)
+  {
+    logger.addEvent(F("Failed to send file to client - Card not healthy"));
+    request->send(500, "text/plain", "SD card not healthy");
+    return;
+  }
 
-    File file = SD_MMC.open(path, FILE_READ);
+  File file = SD_MMC.open(path, FILE_READ);
 
-    if (!file) {
-        logger.addEvent(PSTR("Failed to send file to client - Could not open file: ") + path);
-        request->send(500, "text/plain", "Failed to open file");
-        return;
-    }
+  if (!file)
+  {
+    logger.addEvent(PSTR("Failed to send file to client - Could not open file: ") + path);
+    request->send(500, "text/plain", "Failed to open file");
+    return;
+  }
 
-    AsyncWebServerResponse *response = request->beginChunkedResponse("application/octet-stream", [file](uint8_t *buffer, size_t maxLen, size_t index) mutable -> size_t {
+  AsyncWebServerResponse *response = request->beginChunkedResponse("application/octet-stream", [file](uint8_t *buffer, size_t maxLen, size_t index) mutable -> size_t
+                                                                   {
         size_t chunkSize = file.read(buffer, maxLen);
-        return chunkSize;
-    });
+        return chunkSize; });
 
-    response->addHeader("Content-Disposition", "attachment; filename=" + path);
-    request->send(response);
+  response->addHeader("Content-Disposition", "attachment; filename=" + path);
+  request->send(response);
+}
+
+void MicroSd::formatCard()
+{
+  if (!CardHealthy)
+  {
+    logger.addEvent(F("Failed to format card - Card not healthy"));
+    return;
+  }
+
+  logger.addEvent(F("Formatting SD card..."));
+  char drv[3] = {'0', ':', 0};
+  const size_t workbuf_size = 4096;
+  void *workbuf = NULL;
+
+  size_t allocation_unit_size = 16 * 1024;
+  int sector_size_default = 512;
+
+  workbuf = ff_memalloc(workbuf_size);
+  if (workbuf == NULL)
+  {
+    logger.addEvent(F("Failed to allocate memory for workbuf"));
+    return;
+  }
+
+  size_t alloc_unit_size = esp_vfs_fat_get_allocation_unit_size(
+      sector_size_default,
+      allocation_unit_size);
+
+  FRESULT res = f_mkfs(drv, FM_ANY, alloc_unit_size, workbuf, workbuf_size);
+
+  free(workbuf);
+
 }

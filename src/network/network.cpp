@@ -165,9 +165,40 @@ void Network::setupRoutes()
                        { handleNotFound(request); });
 
   webserver.on("/System.log", HTTP_GET, [this](AsyncWebServerRequest *request)
+               { sdCard->sendFileToClient(request, logger.getFilePath() + "/" + logger.getFileName()); });
+
+  webserver.on("/action/sd/format", HTTP_GET, [this](AsyncWebServerRequest *request)
+               { 
+    if (sdCard) {
+      sdCard -> formatCard();
+
+      request -> send(200, "text/plain", "SD card formatted, rebooting...");
+      ESP.restart();
+    } else {
+      request -> send(500, "text/plain", "SD card not connected");
+    } });
+
+  webserver.on("/action/system/reboot", HTTP_GET, [this](AsyncWebServerRequest *request)
+               {  
+
+    request -> send(200, "text/plain", "Rebooting...");
+    ESP.restart(); });
+
+  webserver.on("/action/sd/getinfo", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
-                  sdCard -> sendFileToClient(request, logger.getFilePath() + "/" + logger.getFileName());
-});
+    if (sdCard) {
+      String response = "SD card info\n";
+      response += "Card size: " + String(sdCard -> getCardSizeMB()) + " MB\n";
+      response += "Total space: " + String(sdCard -> getCardTotalMB()) + " MB\n";
+      response += "Used space: " + String(sdCard -> getCardUsedMB()) + " MB\n";
+      response += "Free space: " + String(sdCard -> getCardFreeMB()) + " MB\n";
+      response += "Used space percent: " + String(sdCard -> getUsedSpacePercent()) + "%\n";
+      response += "Free space percent: " + String(sdCard -> getFreeSpacePercent()) + "%\n";
+
+      request -> send(200, "text/plain", response);
+    } else {
+      request -> send(500, "text/plain", "SD card not connected");
+    } });
 }
 
 void Network::handleNotFound(AsyncWebServerRequest *request)
