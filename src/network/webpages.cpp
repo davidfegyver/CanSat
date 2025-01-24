@@ -53,6 +53,9 @@ const char index_html[] PROGMEM = R"rawliteral(
         <div class="buttons">
             <button class="button" onclick="control('getcrypto')">Get Crypto Data</button>
             <a href="System.log" download="System.log" class="button">Download System Log</a>
+            <button class="button" onclick="control('sd/format')">Format SD card</button>
+            <button class="button" onclick="control('system/reboot')">Reboot system</button>
+            <button class="button" onclick="control('sd/getinfo')">Get Sd Info</button>
         </div>
     </div>
 
