@@ -37,7 +37,6 @@ void setup()
 
 
     tasks.init();
-    //tasks.createTimelapseTask(&SystemCamera);
     flash_led.createTask();
 
     lora.begin();

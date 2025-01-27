@@ -11,30 +11,24 @@ public:
 
     void begin();
 
-    String sendCommand(const String &command);
+    void sendCommand(const String &command);
 
     // System Commands
-    String sysReset();
-    String sysSleep(const String &mode, uint32_t duration);
-    String sysFactoryReset();
-    String sysGetVersion();
+    void sysReset();
+    void sysSleep(const String &mode, uint32_t duration);
+    void sysFactoryReset();
 
     // Radio Commands
-    String radioSetFrequency(uint32_t frequency);
-    String radioSetFrequencyMHz(float frequencyMHz);
-    String radioSetPaBoost(const String &state);
-    String radioSetPower(int power);
-    String radioSetModulation(const String &mode);
-    String radioSetCRC(const String &state);
-    String radioGetCRC();
-    String radioGetModulation();
-    String radioGetFrequency();
-    float radioGetFrequencyMHz();
-    String radioGetPower();
-    String radioGetPaBoost();
-    String radioSetSF(int spreadingFactor);
-    String radioGetSF();
-    String radioTransmit(const String &data, int n = 1);
+    void radioSetFrequency(uint32_t frequency);
+    void radioSetFrequencyMHz(float frequencyMHz);
+    void radioSetPaBoost(const String &state);
+    void radioSetPower(int power);
+    void radioSetModulation(const String &mode);
+    void radioSetCRC(const String &state);
+    void radioSetSF(int spreadingFactor);
+    void radioSetCw(const String &state);
+    void radioTransmit(const String &data, int n = 1);
+    
 
 private:
     Logger &logger;

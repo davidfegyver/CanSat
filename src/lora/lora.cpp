@@ -1,118 +1,90 @@
 #include "lora.h"
 
-Lora::Lora(Logger &logger, HardwareSerial &serialPort) : logger(logger), serialPort(serialPort) {
+Lora::Lora(Logger &logger, HardwareSerial &serialPort) : logger(logger), serialPort(serialPort)
+{
 }
 
-void Lora::begin() {
-    serialPort.begin(LORA_BAUDRATE, SERIAL_8N1, LORA_RX, LORA_TX);
-    delay(100);
+void Lora::begin()
+{
+    serialPort.begin(LORA_BAUDRATE, SERIAL_8N1, -1, LORA_TX);
+
     logger.addEvent(F("Lora module initialized"));
 
     radioSetFrequencyMHz(LORA_FREQ_MHZ);
     radioSetPower(LORA_POWER);
     radioSetPaBoost(LORA_PABOOST);
     radioSetCRC(LORA_CRC);
-    delay(100);
-
-    logger.addEvent(PSTR("Lora module version: ") + sysGetVersion());
-    logger.addEvent(PSTR("Lora module frequency: ") + radioGetFrequency());
-    logger.addEvent(PSTR("Lora module power: ") + radioGetPower());
-    logger.addEvent(PSTR("Lora module modulation: ") + radioGetModulation());
-    logger.addEvent(PSTR("Lora module spreading factor: ") + radioGetSF());
-    logger.addEvent(PSTR("Lora module PA boost: ") + radioGetPaBoost());
-
 }
 
-String Lora::sendCommand(const String &command) {
+void Lora::sendCommand(const String &command)
+{
     serialPort.println(command);
     delay(100);
-    String response;
-    while (serialPort.available()) {
-        response += char(serialPort.read());
-    }
-    response.trim();
-    return response;
 }
 
 // System Commands
-String Lora::sysReset() {
-    return sendCommand(F("sys reset"));
+void Lora::sysReset()
+{
+    sendCommand(F("sys reset"));
 }
 
-String Lora::sysSleep(const String &mode, uint32_t duration) {
-    return sendCommand(PSTR("sys sleep ") + mode + " " + String(duration));
+void Lora::sysSleep(const String &mode, uint32_t duration)
+{
+    sendCommand(PSTR("sys sleep ") + mode + " " + String(duration));
 }
 
-String Lora::sysFactoryReset() {
-    return sendCommand(F("sys factoryRESET"));
-}
-
-String Lora::sysGetVersion() {
-    return sendCommand(F("sys get ver"));
+void Lora::sysFactoryReset()
+{
+    sendCommand(F("sys factoryRESET"));
 }
 
 // Radio Commands
-String Lora::radioSetFrequency(uint32_t frequency) {
-    return sendCommand(PSTR("radio set freq ") + String(frequency));
+void Lora::radioSetFrequency(uint32_t frequency)
+{
+    sendCommand(PSTR("radio set freq ") + String(frequency));
 }
 
-String Lora::radioSetFrequencyMHz(float frequencyMHz) {
+void Lora::radioSetFrequencyMHz(float frequencyMHz)
+{
     uint32_t frequencyHz = frequencyMHz * 1e6;
-    return radioSetFrequency(frequencyHz);
+    radioSetFrequency(frequencyHz);
 }
 
-String Lora::radioSetPaBoost(const String &state) {
-    return sendCommand("radio set pa " + state);
+void Lora::radioSetPaBoost(const String &state)
+{
+    sendCommand("radio set pa " + state);
 }
 
-String Lora::radioSetPower(int power) {
-    return sendCommand("radio set pwr " + String(power));
+void Lora::radioSetPower(int power)
+{
+    sendCommand("radio set pwr " + String(power));
 }
 
-String Lora::radioSetModulation(const String &mode) {
-    return sendCommand("radio set mod " + mode);
+void Lora::radioSetModulation(const String &mode)
+{
+    sendCommand("radio set mod " + mode);
 }
 
-String Lora::radioSetCRC(const String &state) {
-    return sendCommand("radio set crc " + state);
+void Lora::radioSetCRC(const String &state)
+{
+    sendCommand("radio set crc " + state);
 }
 
-String Lora::radioGetCRC() {
-    return sendCommand("radio get crc");
+void Lora::radioSetSF(int spreadingFactor)
+{
+    sendCommand("radio set sf sf" + String(spreadingFactor));
 }
 
-String Lora::radioGetModulation() {
-    return sendCommand("radio get mod");
+void Lora::radioSetCw(const String &state){
+    sendCommand("radio cw " + state);
 }
 
-String Lora::radioGetFrequency() {
-    return sendCommand("radio get freq");
-}
-
-float Lora::radioGetFrequencyMHz() {
-    return radioGetFrequency().toFloat() / 1e6;
-}
-
-String Lora::radioGetPower() {
-    return sendCommand("radio get pwr");
-}
-
-String Lora::radioGetPaBoost() {
-    return sendCommand("radio get pa");
-}
-
-String Lora::radioSetSF(int spreadingFactor) {
-    return sendCommand("radio set sf sf" + String(spreadingFactor));
-}
-
-String Lora::radioGetSF() {
-    return sendCommand("radio get sf");
-}
-
-String Lora::radioTransmit(const String &data, int n) {
+void Lora::radioTransmit(const String &data, int n)
+{
     String hexData;
-    for (char c : data) {
+    for (char c : data)
+    {
         hexData += String(c, HEX);
     }
-    return sendCommand("radio tx " + hexData + " " + String(n));
+    sendCommand("radio tx " + hexData + " " + String(n));
 }

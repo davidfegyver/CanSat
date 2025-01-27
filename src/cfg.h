@@ -88,7 +88,6 @@ https://github.com/espressif/arduino-esp32/blob/master/libraries/SD_MMC/README.m
 
 /* ------- LoRa config -------- */
 #define LORA_BAUDRATE 115200
-#define LORA_RX 12
 #define LORA_TX 13
 #define LORA_FREQ_MHZ 868.5
 #define LORA_POWER 20
