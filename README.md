@@ -22,8 +22,8 @@ meow
 This software uses the following open-source libraries:
 
 [ESP32Async@AsyncTCP](https://github.com/ESP32Async/AsyncTCP) 
+
 [ESP32Async@ESPAsyncWebServer](https://github.com/ESP32Async/ESPAsyncWebServer)
-[bblanchon@ArduinoJson](https://github.com/bblanchon/ArduinoJson)
 
 ## License
 
