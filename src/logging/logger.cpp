@@ -62,6 +62,11 @@ void Logger::addEvent(String msg, bool newLine, bool showTime)
   }
 
   xSemaphoreGive(LogMutex);
+
+  if(!checkIsLogFileHealthy()){
+    checkMaxLogFileSize();
+  }
+  
 }
 
 bool Logger::getTimeSynced() const
@@ -99,7 +104,8 @@ void Logger::checkMaxLogFileSize()
       openLogFile();
     }
   }
-  else if (FullLogMsg.length() > MaxLogSize)
+  
+  if (FullLogMsg.length() > MaxLogSize)
   {
     FullLogMsg = "";
     addEvent(F("In-memory log message cleared due to size limit."));
