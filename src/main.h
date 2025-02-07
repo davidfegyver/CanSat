@@ -17,6 +17,7 @@
 #include "esp32-hal-cpu.h"
 
 #include "lora/lora.h"
+#include "i2c/i2c.h"
 
 Logger SystemLog(LOGS_FILE_PATH, SYSTEMLOG_FILENAME);
 Logger SensorLog(LOGS_FILE_PATH, SENSORLOG_FILENAME);
@@ -29,3 +30,4 @@ Tasks tasks(SystemLog);
 
 Network network(SystemLog);
 Lora lora(SystemLog, Serial1);
+I2C i2c(SystemLog, SensorLog);

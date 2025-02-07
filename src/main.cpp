@@ -35,17 +35,21 @@ void setup()
     network.connectBlinkingLed(&flash_led);
 
 
-
     tasks.init();
-    flash_led.createTask();
 
-    lora.begin();
+    i2c.begin();
+    i2c.scan();
+
+    i2c.initMPU6050();
+    i2c.initHMC5883L();
+    i2c.initMS5611();
+
+
     SystemLog.addEvent(F("Setup complete"));
 }
 
 void loop()
 {
     esp_task_wdt_reset();
-    lora.radioTransmit("Hello World");
     delay(1000);
 }

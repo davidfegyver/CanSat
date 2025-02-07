@@ -1,3 +1,7 @@
+
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+
 /* -------- Camera config -------- */
 #define PWDN_GPIO_NUM 32
 #define RESET_GPIO_NUM -1
@@ -93,3 +97,14 @@ https://github.com/espressif/arduino-esp32/blob/master/libraries/SD_MMC/README.m
 #define LORA_POWER 20
 #define LORA_PABOOST "off"
 #define LORA_CRC "off"
+
+/* ------- I2C config -------- */
+#define I2C_SDA 13
+#define I2C_SCL 16
+
+
+/* ------- Sensors config -------- */
+#define GYRO_RANGE MPU6050_RANGE_500_DEG
+#define ACCEL_RANGE MPU6050_RANGE_2_G
+
+//#define COMPASS_RANGE HMC5883L_RANGE_1_3GA
