@@ -36,4 +36,5 @@ public:
   void setTimeSynced(bool isSynced);
 
   String getSystemTime();
+  String getFullLogMsg();
 };

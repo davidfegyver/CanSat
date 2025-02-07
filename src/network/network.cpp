@@ -165,7 +165,14 @@ void Network::setupRoutes()
                        { handleNotFound(request); });
 
   webserver.on("/System.log", HTTP_GET, [this](AsyncWebServerRequest *request)
-               { sdCard->sendFileToClient(request, logger.getFilePath() + "/" + logger.getFileName()); });
+               { 
+                if(sdCard && sdCard->getCardHealthy()){
+                sdCard->sendFileToClient(request, logger.getFilePath() + "/" + logger.getFileName());
+
+                }
+                else{
+                  request -> send(200, "text/plain", logger.getFullLogMsg());
+                } });
 
   webserver.on("/action/sd/format", HTTP_GET, [this](AsyncWebServerRequest *request)
                { 

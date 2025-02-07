@@ -146,3 +146,7 @@ void Logger::connectSdCard(MicroSd *i_sdCard)
 
   checkMaxLogFileSize();
 }
+
+String Logger::getFullLogMsg(){
+  return FullLogMsg;
+}
