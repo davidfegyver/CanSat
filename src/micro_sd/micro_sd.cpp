@@ -492,7 +492,6 @@ void MicroSd::sendFileToClient(AsyncWebServerRequest *request, const String &pat
         size_t chunkSize = file.read(buffer, maxLen);
         return chunkSize; });
 
-  response->addHeader("Content-Disposition", "attachment; filename=" + path);
   request->send(response);
 }
 
