@@ -21,9 +21,11 @@ meow
 ## Used Libraries
 This software uses the following open-source libraries:
 
-[ESP32Async@AsyncTCP](https://github.com/ESP32Async/AsyncTCP) 
-
-[ESP32Async@ESPAsyncWebServer](https://github.com/ESP32Async/ESPAsyncWebServer)
+* [ESP32Async@AsyncTCP](https://github.com/ESP32Async/AsyncTCP) 
+* [ESP32Async@ESPAsyncWebServer](https://github.com/ESP32Async/ESPAsyncWebServer)
+* [jarzebski@Arduino-MS5611](https://github.com/jarzebski/Arduino-MS5611)
+* [adafruit@Adafruit MPU6050](https://github.com/adafruit/Adafruit_MPU6050)
+* [adafruit/Adafruit HMC5883 Unified](https://github.com/adafruit/Adafruit_HMC5883_Unified)
 
 ## License
 
