@@ -1,8 +1,11 @@
+// cfg.h - Configuration file for CanSat
+
+#pragma once
 
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
 
-/* -------- Camera config -------- */
+/* -------- Camera Configuration -------- */
 #define PWDN_GPIO_NUM 32
 #define RESET_GPIO_NUM -1
 #define XCLK_GPIO_NUM 0
@@ -24,12 +27,10 @@
 #define FRAME_SIZE 0
 #define MAX_CAMERA_FAILS 5
 
-/* -------- MCU config -------- */
+/* -------- Microcontroller Configuration -------- */
 #define DISABLE_BROWNOUT true
 
-/* -------- OTA config -------- */
-
-/* -------- SD card config -------- */
+/* -------- SD Card Configuration -------- */
 
 /*
 
@@ -39,13 +40,12 @@ https://github.com/espressif/arduino-esp32/blob/master/libraries/SD_MMC/README.m
 */
 #define IS_SD_ONE_LINE true
 
-/* -------- Built-in LED GPIO config -------- */
+/* -------- Built-in LED Configuration -------- */
 #define FLASH_GPIO 4
-#define FLASH_ON_STATUS 205 // Limit flash intensity to 80%. 2^8*0.8
-
+#define FLASH_ON_STATUS 255 // 2^8*percent
 #define STATUS_GPIO 33
 
-/* -------- WIFI config -------- */
+/* -------- WiFi Configuration -------- */
 
 #define WIFI_SSID "CanBus - CanSat"
 #define WIFI_PASSWORD "HyperSecure"
@@ -55,7 +55,7 @@ https://github.com/espressif/arduino-esp32/blob/master/libraries/SD_MMC/README.m
 #define WIFI_SUBNET {255, 255, 255, 0}
 #define DEVICE_HOSTNAME "CanSat"
 
-/* -------- Photos config -------- */
+/* -------- Photo Storage Configuration -------- */
 
 #define PHOTO_FOLDER "/photos"
 #define PHOTO_PREFIX "photo"
@@ -68,43 +68,48 @@ https://github.com/espressif/arduino-esp32/blob/master/libraries/SD_MMC/README.m
 
 #define EEPROM_SIZE (EEPROM_LENGTH_SOMETHING_I_CAN_FEEL)
 
-/* -------- MicroSD Logs -------- */
+/* -------- EEPROM Configuration -------- */
 #define SYSTEMLOG_FILENAME "System.log"
 #define SENSORLOG_FILENAME "Sensors.log"
 #define LOGS_FILE_PATH "/logs"
 #define LOGS_MAX_SIZE 1024
 #define ENABLE_SERIAL_LOGS true
 
-/* -------- Webserver config -------- */
+/* -------- Web Server Configuration -------- */
 #define WEB_SERVER_PORT 8080
 #define WEB_CACHE_INTERVAL 60000
 
-/* -------- Tasks -------- */
+/* -------- Task Timings (in ms) -------- */
+
+#define WDG_TIMEOUT 30000
 
 #define TASK_TELEMETRY 10000
-#define WDG_TIMEOUT 30000
 #define TASK_SDCARD 10000
 #define TASK_TIMELAPSE 500
+#define TASK_MPU6050 100
+#define TASK_HMC5883L 100
+#define TASK_MS5611 100
 
-/* -------- Basic config -------- */
+/* -------- System Configuration -------- */
 #define SW_BUILD __DATE__ " " __TIME__
-#define SERIAL_BAUDRATE 115200
+#define SERIAL_BAUD 115200
 
-/* ------- LoRa config -------- */
-#define LORA_BAUDRATE 115200
+/* -------- LoRa Configuration -------- */
 #define LORA_TX 13
+
+#define LORA_BAUD 115200
 #define LORA_FREQ_MHZ 868.5
 #define LORA_POWER 20
 #define LORA_PABOOST "off"
 #define LORA_CRC "off"
+#define LORA_BANDWIDTH 250
 
-/* ------- I2C config -------- */
+/* -------- I2C Configuration -------- */
 #define I2C_SDA 13
 #define I2C_SCL 16
 
-
-/* ------- Sensors config -------- */
+/* -------- Sensor Configuration -------- */
 #define GYRO_RANGE MPU6050_RANGE_500_DEG
 #define ACCEL_RANGE MPU6050_RANGE_2_G
 
-//#define COMPASS_RANGE HMC5883L_RANGE_1_3GA
+// #define COMPASS_RANGE HMC5883L_RANGE_1_3GA
