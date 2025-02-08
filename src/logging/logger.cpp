@@ -1,5 +1,5 @@
 #include "logger.h"
-#include "micro_sd/micro_sd.h"
+#include "globals.h"
 
 Logger::Logger(String i_FilePath, String i_FileName)
     : FileName(i_FileName), FilePath(i_FilePath)
@@ -9,26 +9,20 @@ Logger::Logger(String i_FilePath, String i_FileName)
 
 void Logger::openLogFile()
 {
-  if (sdCard)
-  {
-    sdCard->createFileIfNotExists(FilePath);
-    addEvent(PSTR("Opening log file: ") + FilePath + PSTR("/") + FileName);
-    sdCard->openFile(&LogFile, FilePath + "/" + FileName);
-  }
+  sd_card.createFileIfNotExists(FilePath);
+  addEvent(PSTR("Opening log file: ") + FilePath + PSTR("/") + FileName);
+  sd_card.openFile(&LogFile, FilePath + "/" + FileName);
 }
 
 void Logger::closeLogFile()
 {
-  if (sdCard)
-  {
-    addEvent(PSTR("Closing log file: ") + FilePath + "/" + FileName);
-    sdCard->closeFile(&LogFile);
-  }
+  addEvent(PSTR("Closing log file: ") + FilePath + "/" + FileName);
+  sd_card.closeFile(&LogFile);
 }
 
 bool Logger::checkIsLogFileHealthy()
 {
-  return sdCard && sdCard->getCardHealthy() && sdCard->isFileOpen(&LogFile);
+  return sd_card.getCardHealthy() && sd_card.isFileOpen(&LogFile);
 }
 
 void Logger::addEvent(String msg, bool newLine, bool showTime)
@@ -38,7 +32,7 @@ void Logger::addEvent(String msg, bool newLine, bool showTime)
   LastLogMsg = "";
   if (showTime)
   {
-    LastLogMsg += getSystemTime() + " - ";
+    LastLogMsg += (String(millis()) + " - ");
   }
 
   LastLogMsg += msg;
@@ -58,26 +52,15 @@ void Logger::addEvent(String msg, bool newLine, bool showTime)
   }
   else
   {
-    sdCard->appendFile(&LogFile, &LastLogMsg);
+    sd_card.appendFile(&LogFile, &LastLogMsg);
   }
 
   xSemaphoreGive(LogMutex);
 
-  if(!checkIsLogFileHealthy()){
+  if (!checkIsLogFileHealthy())
+  {
     checkMaxLogFileSize();
   }
-  
-}
-
-bool Logger::getTimeSynced() const
-{
-  return TimeSynced;
-}
-
-void Logger::setTimeSynced(bool i_data)
-{
-  TimeSynced = i_data;
-  addEvent(PSTR("System time synced: ") + getSystemTime());
 }
 
 String Logger::getFileName() const
@@ -94,17 +77,17 @@ void Logger::checkMaxLogFileSize()
 {
   if (checkIsLogFileHealthy())
   {
-    uint32_t FileSize = sdCard->getFileSize(FilePath + "/" + FileName);
-    uint16_t file_count = sdCard->fileCount(FilePath, FileName);
+    uint32_t FileSize = sd_card.getFileSize(FilePath + "/" + FileName);
+    uint16_t file_count = sd_card.fileCount(FilePath, FileName);
 
     if (FileSize > MaxLogSize)
     {
       closeLogFile();
-      sdCard->renameFile(FilePath + "/" + FileName, FilePath + "/" + FileName + String(file_count));
+      sd_card.renameFile(FilePath + "/" + FileName, FilePath + "/" + FileName + String(file_count));
       openLogFile();
     }
   }
-  
+
   if (FullLogMsg.length() > MaxLogSize)
   {
     FullLogMsg = "";
@@ -112,40 +95,16 @@ void Logger::checkMaxLogFileSize()
   }
 }
 
-String Logger::getSystemTime()
+void Logger::connectSdCard()
 {
-  String ret = "0000-00-00_00-00-00";
-
-  if (TimeSynced)
-  {
-    struct tm timeinfo;
-
-    if (!getLocalTime(&timeinfo))
-    {
-      addEvent(F("Failed to fetch local time."));
-      return ret;
-    }
-
-    char timeString[20];
-    strftime(timeString, sizeof(timeString), "%Y-%m-%d_%H-%M-%S", &timeinfo);
-    ret = String(timeString);
-  }
-
-  return ret;
-}
-
-void Logger::connectSdCard(MicroSd *i_sdCard)
-{
-  sdCard = i_sdCard;
-
-  if (sdCard && sdCard->getCardHealthy())
+  if (sd_card.getCardHealthy())
   {
     addEvent(PSTR("SD card connected."));
     openLogFile();
 
     if (checkIsLogFileHealthy())
     {
-      sdCard->appendFile(&LogFile, &FullLogMsg);
+      sd_card.appendFile(&LogFile, &FullLogMsg);
       FullLogMsg = "";
     }
   }
@@ -153,6 +112,7 @@ void Logger::connectSdCard(MicroSd *i_sdCard)
   checkMaxLogFileSize();
 }
 
-String Logger::getFullLogMsg(){
+String Logger::getFullLogMsg()
+{
   return FullLogMsg;
 }

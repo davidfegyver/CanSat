@@ -1,10 +1,12 @@
 #include "camera.h"
 
-Camera::Camera(Logger &logger) : logger(logger) {}
+#include "globals.h"
+
+Camera::Camera() {}
 
 void Camera::init()
 {
-    logger.addEvent(F("Initializing camera library"));
+    SystemLog.addEvent(F("Initializing camera library"));
 
     applyCameraConfig();
     initCameraModule();
@@ -12,23 +14,23 @@ void Camera::init()
 
 void Camera::reinitialize()
 {
-    logger.addEvent(F("Reinitializing camera module"));
+    SystemLog.addEvent(F("Reinitializing camera module"));
 
     if (esp_camera_deinit() != ESP_OK)
     {
-        logger.addEvent(F("Error while deinitializing camera module"));
+        SystemLog.addEvent(F("Error while deinitializing camera module"));
     }
 
     delay(100);
     applyCameraConfig();
     initCameraModule();
 
-    logger.addEvent(F("Camera module reinitialized"));
+    SystemLog.addEvent(F("Camera module reinitialized"));
 }
 
 void Camera::applyCameraConfig()
 {
-    logger.addEvent(F("Applying camera configuration"));
+    SystemLog.addEvent(F("Applying camera configuration"));
 
     config.ledc_channel = LEDC_CHANNEL_0;
     config.ledc_timer = LEDC_TIMER_0;
@@ -58,13 +60,13 @@ void Camera::applyCameraConfig()
 
 void Camera::initCameraModule()
 {
-    logger.addEvent(F("Initializing camera module"));
+    SystemLog.addEvent(F("Initializing camera module"));
 
     esp_err_t err = esp_camera_init(&config);
     if (err != ESP_OK)
     {
-        logger.addEvent(PSTR("Camera initialization failed. Error: ") + String(err, HEX));
-        logger.addEvent(F("Resetting ESP32-CAM!"));
+        SystemLog.addEvent(PSTR("Camera initialization failed. Error: ") + String(err, HEX));
+        SystemLog.addEvent(F("Resetting ESP32-CAM!"));
         ESP.restart();
     }
 
@@ -76,26 +78,26 @@ void Camera::fetchCameraModuleInfo()
 {
     if (!sensor)
     {
-        logger.addEvent(F("Camera sensor is NULL"));
+        SystemLog.addEvent(F("Camera sensor is NULL"));
         return;
     }
 
     auto *info = esp_camera_sensor_get_info(&sensor->id);
     if (!info)
     {
-        logger.addEvent(F("Camera sensor info is NULL"));
+        SystemLog.addEvent(F("Camera sensor info is NULL"));
         return;
     }
 
     CameraType = static_cast<camera_pid_t>(sensor->id.PID);
     CameraName = info->name;
 
-    logger.addEvent(PSTR("Camera type: ") + String(CameraType));
-    logger.addEvent(PSTR("Camera name: ") + String(CameraName));
-    logger.addEvent(PSTR("Camera model: ") + String(info->model));
-    logger.addEvent(PSTR("Camera PID: ") + String(info->pid));
-    logger.addEvent(PSTR("Camera MAX framesize: ") + String(info->max_size));
-    logger.addEvent(PSTR("Camera supports JPEG: ") + String(info->support_jpeg));
+    SystemLog.addEvent(PSTR("Camera type: ") + String(CameraType));
+    SystemLog.addEvent(PSTR("Camera name: ") + String(CameraName));
+    SystemLog.addEvent(PSTR("Camera model: ") + String(info->model));
+    SystemLog.addEvent(PSTR("Camera PID: ") + String(info->pid));
+    SystemLog.addEvent(PSTR("Camera MAX framesize: ") + String(info->max_size));
+    SystemLog.addEvent(PSTR("Camera supports JPEG: ") + String(info->support_jpeg));
 }
 
 void Camera::capturePhoto()
@@ -104,7 +106,7 @@ void Camera::capturePhoto()
 
     if (!xSemaphoreTake(frameBufferSemaphore, portMAX_DELAY))
     {
-        logger.addEvent(F("Failed to take frame buffer semaphore"));
+        SystemLog.addEvent(F("Failed to take frame buffer semaphore"));
         return;
     }
 
@@ -121,13 +123,13 @@ void Camera::capturePhoto()
 
     do
     {
-        logger.addEvent(F("Taking photo..."));
+        SystemLog.addEvent(F("Taking photo..."));
 
         FrameBuffer = esp_camera_fb_get();
         if (!FrameBuffer)
         {
             CameraFailCounter++;
-            logger.addEvent(PSTR("Camera capture failed! Attempt: ") + String(CameraFailCounter));
+            SystemLog.addEvent(PSTR("Camera capture failed! Attempt: ") + String(CameraFailCounter));
             xSemaphoreGive(frameBufferSemaphore);
             return;
         }
@@ -141,7 +143,7 @@ void Camera::capturePhoto()
         attempts++;
         if (attempts >= maxAttempts)
         {
-            logger.addEvent(F("Failed to capture a valid photo after max attempts"));
+            SystemLog.addEvent(F("Failed to capture a valid photo after max attempts"));
             reinitialize();
             break;
         }
@@ -154,17 +156,17 @@ void Camera::takePhotoToSdCard()
 {
     capturePhoto();
 
-    if (isCaptureSuccessful() && sdCard && sdCard->getCardHealthy())
+    if (isCaptureSuccessful() && sd_card.getCardHealthy())
     {
         String FileName = String(PHOTO_FOLDER) + String("/") + String(PHOTO_PREFIX) + String(++photoCount) + String(PHOTO_SUFFIX);
 
-        if (sdCard->WritePicture(FileName, FrameBuffer->buf, FrameBuffer->len))
+        if (sd_card.WritePicture(FileName, FrameBuffer->buf, FrameBuffer->len))
         {
-            logger.addEvent(PSTR("Photo saved to SD card: ") + FileName);
+            SystemLog.addEvent(PSTR("Photo saved to SD card: ") + FileName);
         }
         else
         {
-            logger.addEvent(F("Failed to save photo to SD card"));
+            SystemLog.addEvent(F("Failed to save photo to SD card"));
         }
     }
 }
@@ -177,10 +179,20 @@ void Camera::timelapseTask(void *pvParameters)
     {
         esp_task_wdt_reset();
 
-        if (sdCard && sdCard->getCardHealthy())
+        if (sd_card.getCardHealthy())
         {
             takePhotoToSdCard();
         }
+        else
+        {
+            capturePhoto();
+        }
+
+        std::vector<uint8_t> hash = crypto.sha256(FrameBuffer->buf, FrameBuffer->len);
+
+        String hashString = crypto.uint8_vector_to_string(hash);
+
+        SystemLog.addEvent(PSTR("R: ") + hashString);
 
         vTaskDelayUntil(&xLastWakeTime, TASK_TIMELAPSE / portTICK_PERIOD_MS);
     }
@@ -248,15 +260,13 @@ uint16_t Camera::getFrameHeight() const
     }
 }
 
-void Camera::connectSdCard(MicroSd *i_sdCard)
+void Camera::connectSdCard()
 {
-    sdCard = i_sdCard;
-
-    if (sdCard && sdCard->getCardHealthy())
+    if (sd_card.getCardHealthy())
     {
-        sdCard->createFileIfNotExists(PHOTO_FOLDER);
-        photoCount = sdCard->countFilesInDir(PHOTO_FOLDER);
-        logger.addEvent(PSTR("SD card connected. Photo count: ") + String(photoCount));
+        sd_card.createFileIfNotExists(PHOTO_FOLDER);
+        photoCount = sd_card.countFilesInDir(PHOTO_FOLDER);
+        SystemLog.addEvent(PSTR("SD card connected. Photo count: ") + String(photoCount));
     }
 }
 
@@ -285,7 +295,7 @@ framesize_t Camera::convertToFrameSize(uint8_t data)
     case 6:
         return FRAMESIZE_UXGA;
     default:
-        logger.addEvent(F("Invalid frame size input. Defaulting to FRAMESIZE_QVGA."));
+        SystemLog.addEvent(F("Invalid frame size input. Defaulting to FRAMESIZE_QVGA."));
         return FRAMESIZE_QVGA;
     }
 }

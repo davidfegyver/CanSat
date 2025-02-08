@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include "cfg.h"
@@ -15,31 +17,17 @@
 #include <ESPAsyncWebServer.h>
 #include "lora/lora.h"
 
-
 class Network
 {
 private:
-  Logger &logger;
-  
-  Camera *camera = nullptr;
-  MicroSd *sdCard = nullptr;
-  BlinkingLed *led = nullptr;
-  Lora *lora = nullptr;
-
   void setupRoutes();
-  
+
   void handleNotFound(AsyncWebServerRequest *request);
 
 public:
-  Network(Logger &i_logger);
-
+  Network();
 
   AsyncWebServer webserver{WEB_SERVER_PORT};
 
   void init();
-
-  void connectCamera(Camera *camera);
-  void connectSdCard(MicroSd *sdCard);
-  void connectBlinkingLed(BlinkingLed *led);
-  void connectLora(Lora *lora);
 };

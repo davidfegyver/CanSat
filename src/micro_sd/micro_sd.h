@@ -11,7 +11,7 @@
 #include "ff.h"
 #include "vfs_fat_internal.h"
 
-class Logger;
+#include "logging/logger.h"
 
 class MicroSd
 {
@@ -26,11 +26,10 @@ private:
   uint8_t UsedSpacePercent = 100;
   uint8_t CardType;
 
-  Logger &logger;
   SemaphoreHandle_t sdCardMutex = xSemaphoreCreateMutex();
 
 public:
-  MicroSd(Logger &);
+  MicroSd();
   ~MicroSd() {};
 
   void initCard();
@@ -70,6 +69,6 @@ public:
   uint8_t getUsedSpacePercent();
 
   bool WritePicture(const String &photoName, const uint8_t *photoData, size_t photoLen);
-  void sendFileToClient(AsyncWebServerRequest *, const String &); 
+  void sendFileToClient(AsyncWebServerRequest *, const String &);
   void formatCard();
 };

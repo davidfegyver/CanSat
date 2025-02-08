@@ -1,14 +1,16 @@
 #include "lora.h"
 
-Lora::Lora(Logger &logger, HardwareSerial &serialPort) : logger(logger), serialPort(serialPort)
+#include "globals.h"
+
+Lora::Lora(HardwareSerial &serialPort) : serialPort(serialPort)
 {
 }
 
 void Lora::begin()
 {
-    serialPort.begin(LORA_BAUDRATE, SERIAL_8N1, -1, LORA_TX);
+    serialPort.begin(LORA_BAUD, SERIAL_8N1, -1, LORA_TX);
 
-    logger.addEvent(F("Lora module initialized"));
+    SystemLog.addEvent(F("Lora module initialized"));
 
     radioSetFrequencyMHz(LORA_FREQ_MHZ);
     radioSetPower(LORA_POWER);

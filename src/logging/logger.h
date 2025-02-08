@@ -3,12 +3,9 @@
 #include <Arduino.h>
 #include <FS.h>
 
-class MicroSd;
-
 class Logger
 {
 private:
-  MicroSd *sdCard = nullptr;
   String FilePath;
   String FileName;
   uint16_t MaxLogSize = 1024;
@@ -24,7 +21,7 @@ public:
   Logger(String filePath, String fileName);
   ~Logger() = default;
 
-  void connectSdCard(MicroSd *sdCard);
+  void connectSdCard();
   void openLogFile();
   void closeLogFile();
   bool checkIsLogFileHealthy();
@@ -32,9 +29,6 @@ public:
 
   String getFileName() const;
   String getFilePath() const;
-  bool getTimeSynced() const;
-  void setTimeSynced(bool isSynced);
 
-  String getSystemTime();
   String getFullLogMsg();
 };

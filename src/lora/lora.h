@@ -1,13 +1,12 @@
 #pragma once
 
 #include <Arduino.h>
-#include "logging/logger.h"
 #include "cfg.h"
 
 class Lora
 {
 public:
-    Lora(Logger &logger, HardwareSerial &serialPort);
+    Lora(HardwareSerial &serialPort);
 
     void begin();
 
@@ -31,6 +30,5 @@ public:
     void radioSetBW(int bandwidth);
 
 private:
-    Logger &logger;
     HardwareSerial &serialPort;
 };

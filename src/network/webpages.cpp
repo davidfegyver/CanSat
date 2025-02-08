@@ -85,7 +85,7 @@ async function control(action) {
 async function showImage(path) {
     output.textContent = 'Loading image...';
     const response = await fetch(path);
-    
+
     if (!response.headers.get('content-type').startsWith('image')) {
         const data = await response.text();
         output.textContent = data;

@@ -1,6 +1,8 @@
 #include "i2c.h"
 
-I2C::I2C(Logger &logger, Logger &sensorLogger) : logger(logger), sensorLogger(sensorLogger)
+#include "globals.h"
+
+I2C::I2C()
 {
 }
 
@@ -11,7 +13,7 @@ void I2C::begin()
 
 void I2C::scan()
 {
-    logger.addEvent(F("Scanning for I2C devices ..."));
+    SystemLog.addEvent(F("Scanning for I2C devices ..."));
 
     byte error, address;
     int nDevices;
@@ -31,92 +33,46 @@ void I2C::scan()
             }
             logString += String(address, HEX);
 
-            logger.addEvent(logString);
+            SystemLog.addEvent(logString);
             nDevices++;
         }
     }
     if (nDevices == 0)
     {
-        logger.addEvent(F("No I2C devices found"));
+        SystemLog.addEvent(F("No I2C devices found"));
     }
     else
     {
-        logger.addEvent(F("Scan complete"));
+        SystemLog.addEvent(F("Scan complete"));
     }
 }
 
 void I2C::initMS5611()
 {
-    logger.addEvent(F("Initializing HMC5883L (Pressure & Temperature) ..."));
+    SystemLog.addEvent(F("Initializing HMC5883L (Pressure & Temperature) ..."));
 
     barometer.begin();
 
-    logger.addEvent(F("MS5611 initialized"));
-}
-
-void I2C::testMS5611()
-{
-
-    double myRealAltitude = 335;
-
-    double realTemperature = barometer.readTemperature();
-    double realPressure = barometer.readPressure();
-
-    double seaLevelPressure = barometer.getSeaLevel(realPressure, myRealAltitude);
-
-    logger.addEvent("realTemp = " + String(realTemperature) + " *C");
-
-    logger.addEvent("realPressure = " + String(realPressure / 100) + " hPa");
-
-    logger.addEvent("seaLevelPressure = " + String(seaLevelPressure / 100) + " hPa");
+    SystemLog.addEvent(F("MS5611 initialized"));
 }
 
 void I2C::initHMC5883L()
 {
-    logger.addEvent(F("Initializing HMC5883L (Magnetometer) ..."));
+    SystemLog.addEvent(F("Initializing HMC5883L (Magnetometer) ..."));
 
     mag.begin();
 
-    logger.addEvent(F("HMC5883L initialized"));
-}
-
-void I2C::testHMC5883L()
-{
-    sensors_event_t event;
-    mag.getEvent(&event);
-
-    logger.addEvent(String(event.magnetic.x) + ",", false, false);
-    logger.addEvent(String(event.magnetic.y) + ",", false, false);
-    logger.addEvent(String(event.magnetic.z) + ",", true, false);
-
-    float heading = atan2(event.magnetic.y, event.magnetic.x);
-
-    // http://www.magnetic-declination.com/
-    float declinationAngle = 0.09;
-    heading += declinationAngle;
-
-    if (heading < 0)
-        heading += 2 * PI;
-
-    if (heading > 2 * PI)
-        heading -= 2 * PI;
-
-    float headingDegrees = heading * 180 / M_PI;
-
-    logger.addEvent("Heading: " + String(headingDegrees) + " degrees");
+    SystemLog.addEvent(F("HMC5883L initialized"));
 }
 
 void I2C::initMPU6050()
 {
 
-    logger.addEvent(F("Initializing MPU6050 (Gyro & Accelerometer - IMU) ..."));
-    while (!mpu.begin())
-    {
-        Serial.println("Could not find a valid MPU6050 sensor, check wiring!");
-        delay(500);
-    }
+    SystemLog.addEvent(F("Initializing MPU6050 (Gyro & Accelerometer - IMU) ..."));
 
-    logger.addEvent(F("MPU6050 2"));
+    mpu.begin();
+
+    SystemLog.addEvent(F("MPU6050 2"));
 
     mpu.setGyroRange(GYRO_RANGE);
     mpu.setAccelerometerRange(ACCEL_RANGE);
@@ -126,18 +82,117 @@ void I2C::initMPU6050()
     mpu.setI2CBypass(true);
     mpu.enableSleep(false);
 
-    logger.addEvent(F("MPU6050 initialized"));
+    SystemLog.addEvent(F("MPU6050 initialized"));
 }
 
-void I2C::testMPU6050()
+void I2C::createMPU6050Task()
 {
+    TaskHandle_t Task_MPU6050;
+    SystemLog.addEvent(F("Creating MPU6050 Task"));
 
-    sensors_event_t a, g, temp;
-    mpu.getEvent(&a, &g, &temp);
-    logger.addEvent("AccelX: " + String(a.acceleration.x) + "   ", false, false);
-    logger.addEvent("AccelY: " + String(a.acceleration.y) + "   ", false, false);
-    logger.addEvent("AccelZ: " + String(a.acceleration.z) + "   ", false);
-    logger.addEvent("GyroX: " + String(g.gyro.x));
-    logger.addEvent("GyroY: " + String(g.gyro.y));
-    logger.addEvent("GyroZ: " + String(g.gyro.z));
+    xTaskCreatePinnedToCore(
+        [](void *pvParameters)
+        {
+            I2C *i2c = static_cast<I2C *>(pvParameters);
+            Adafruit_MPU6050 mpu = i2c->mpu;
+
+            TickType_t xLastWakeTime = xTaskGetTickCount();
+
+            while (true)
+            {
+                esp_task_wdt_reset();
+                mpu.getEvent(&i2c->lastAccelerometerEvent, &i2c->lastGyroscopeEvent, &i2c->lastTemperatureEvent);
+
+                String AlogString = "A:" + String(i2c->lastAccelerometerEvent.acceleration.x) + "," + String(i2c->lastAccelerometerEvent.acceleration.y) + "," + String(i2c->lastAccelerometerEvent.acceleration.z);
+                String GlogString = "G:" + String(i2c->lastGyroscopeEvent.gyro.x) + "," + String(i2c->lastGyroscopeEvent.gyro.y) + "," + String(i2c->lastGyroscopeEvent.gyro.z);
+                String TlogString = "t:" + String(i2c->lastTemperatureEvent.temperature);
+
+                SensorLog.addEvent(AlogString);
+                SensorLog.addEvent(GlogString);
+                SensorLog.addEvent(TlogString);
+
+                vTaskDelayUntil(&xLastWakeTime, TASK_MPU6050 / portTICK_PERIOD_MS);
+            }
+        },
+        "MPU6050Task",
+        2048,
+        this,
+        1,
+        &Task_MPU6050,
+        0);
+
+    ESP_ERROR_CHECK(esp_task_wdt_add(Task_MPU6050));
+}
+
+void I2C::createHMC5883LTask()
+{
+    TaskHandle_t Task_HMC5883L;
+    SystemLog.addEvent(F("Creating HMC5883L Task"));
+
+    xTaskCreatePinnedToCore(
+        [](void *pvParameters)
+        {
+            I2C *i2c = static_cast<I2C *>(pvParameters);
+            Adafruit_HMC5883_Unified mag = i2c->mag;
+
+            TickType_t xLastWakeTime = xTaskGetTickCount();
+
+            while (true)
+            {
+                esp_task_wdt_reset();
+                mag.getEvent(&i2c->lastMagnetometerEvent);
+
+                String logString = "M:" + String(i2c->lastMagnetometerEvent.magnetic.x) + "," + String(i2c->lastMagnetometerEvent.magnetic.y) + "," + String(i2c->lastMagnetometerEvent.magnetic.z);
+                SensorLog.addEvent(logString);
+
+                vTaskDelayUntil(&xLastWakeTime, TASK_HMC5883L / portTICK_PERIOD_MS);
+            }
+        },
+        "HMC5883LTask",
+        2048,
+        this,
+        1,
+        &Task_HMC5883L,
+        0);
+
+    ESP_ERROR_CHECK(esp_task_wdt_add(Task_HMC5883L));
+}
+
+void I2C::createMS5611Task()
+{
+    TaskHandle_t Task_MS5611;
+    SystemLog.addEvent(F("Creating MS5611 Task"));
+
+    xTaskCreatePinnedToCore(
+        [](void *pvParameters)
+        {
+            I2C *i2c = static_cast<I2C *>(pvParameters);
+            MS5611 barometer = i2c->barometer;
+
+            TickType_t xLastWakeTime = xTaskGetTickCount();
+
+            while (true)
+            {
+                esp_task_wdt_reset();
+
+                i2c->lastTemperature = barometer.readTemperature();
+                i2c->lastRealPressure = barometer.readPressure();
+
+                String TlogString = "T:" + String(i2c->lastTemperature);
+                String PlogString = "P:" + String(i2c->lastRealPressure);
+
+                SensorLog.addEvent(TlogString);
+                SensorLog.addEvent(PlogString);
+
+                vTaskDelayUntil(&xLastWakeTime, TASK_MS5611 / portTICK_PERIOD_MS);
+            }
+        },
+        "MS5611Task",
+        2048,
+        this,
+        1,
+        &Task_MS5611,
+        0);
+
+    ESP_ERROR_CHECK(esp_task_wdt_add(Task_MS5611));
 }

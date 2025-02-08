@@ -1,18 +1,19 @@
 #include "micro_sd.h"
-#include "logging/logger.h"
 
-MicroSd::MicroSd(Logger &i_logger) : logger(i_logger) {}
+#include "globals.h"
+
+MicroSd::MicroSd() {}
 
 void MicroSd::initCard()
 {
   CardHealthy = true;
   CardHealthyOnBoot = true;
 
-  logger.addEvent(F("Initializing micro-SD Card"));
+  SystemLog.addEvent(F("Initializing micro-SD Card"));
 
   if (!SD_MMC.begin("/sdcard", IS_SD_ONE_LINE))
   {
-    logger.addEvent(F("SD Card Mount Failed"));
+    SystemLog.addEvent(F("SD Card Mount Failed"));
     CardHealthyOnBoot = false;
     CardHealthy = false;
     return;
@@ -23,16 +24,16 @@ void MicroSd::initCard()
   switch (CardType)
   {
   case CARD_MMC:
-    logger.addEvent(F("Card Type: MMC"));
+    SystemLog.addEvent(F("Card Type: MMC"));
     break;
   case CARD_SD:
-    logger.addEvent(F("Card Type: SDSC"));
+    SystemLog.addEvent(F("Card Type: SDSC"));
     break;
   case CARD_SDHC:
-    logger.addEvent(F("Card Type: SDHC"));
+    SystemLog.addEvent(F("Card Type: SDHC"));
     break;
   default:
-    logger.addEvent(F("No/unknown SD Card attached!"));
+    SystemLog.addEvent(F("No/unknown SD Card attached!"));
     CardHealthyOnBoot = false;
     CardHealthy = false;
     return;
@@ -42,18 +43,18 @@ void MicroSd::initCard()
 
   if (CardHealthy)
   {
-    logger.addEvent(F("SD Card initialized successfully"));
+    SystemLog.addEvent(F("SD Card initialized successfully"));
   }
   else
   {
     CardHealthyOnBoot = false;
-    logger.addEvent(F("SD Card initialization failed!"));
+    SystemLog.addEvent(F("SD Card initialization failed!"));
   }
 }
 
 void MicroSd::reinitCard()
 {
-  logger.addEvent(F("Reinitializing micro-SD Card"));
+  SystemLog.addEvent(F("Reinitializing micro-SD Card"));
   SD_MMC.end();
   delay(50);
   initCard();
@@ -71,7 +72,7 @@ void MicroSd::updateCardUsageStatus()
   FreeSpacePercent = (CardFreeMB * 100) / CardSizeMB;
   UsedSpacePercent = 100 - FreeSpacePercent;
 
-  logger.addEvent(PSTR("Card usage - Size: ") + String(CardSizeMB) + F(" MB, Used: ") + String(CardUsedMB) + F(" MB, Free: ") + String(CardFreeMB) + F(" MB, Free: ") + String(FreeSpacePercent) + F("%"));
+  SystemLog.addEvent(PSTR("Card usage - Size: ") + String(CardSizeMB) + F(" MB, Used: ") + String(CardUsedMB) + F(" MB, Free: ") + String(CardFreeMB) + F(" MB, Free: ") + String(FreeSpacePercent) + F("%"));
 }
 
 void MicroSd::checkCardHealth()
@@ -85,14 +86,14 @@ void MicroSd::checkCardHealth()
 
   if (CardSizeMB == 0 || CardTotalMB == 0 || FreeSpacePercent <= 5)
   {
-    logger.addEvent(F("SD Card health check failed: Low space or invalid size"));
+    SystemLog.addEvent(F("SD Card health check failed: Low space or invalid size"));
     CardHealthy = false;
   }
 }
 
 void MicroSd::cardCheckTask(void *pvParameters)
 {
-  logger.addEvent(PSTR("Starting SD card health check task on core ") + String(xPortGetCoreID()));
+  SystemLog.addEvent(PSTR("Starting SD card health check task on core ") + String(xPortGetCoreID()));
   TickType_t xLastWakeTime = xTaskGetTickCount();
 
   while (true)
@@ -100,7 +101,7 @@ void MicroSd::cardCheckTask(void *pvParameters)
     esp_task_wdt_reset();
     checkCardHealth();
 
-    logger.addEvent(PSTR("Card healthy status: ") + String(CardHealthy));
+    SystemLog.addEvent(PSTR("Card healthy status: ") + String(CardHealthy));
 
     if (!CardHealthy && CardHealthyOnBoot)
     {
@@ -116,19 +117,19 @@ bool MicroSd::openFile(File *i_file, String i_path)
 {
   if (!CardHealthy)
   {
-    logger.addEvent(F("Failed to open file - Card not healthy"));
+    SystemLog.addEvent(F("Failed to open file - Card not healthy"));
     return false;
   }
 
   *i_file = SD_MMC.open(i_path.c_str(), FILE_APPEND);
   if (!*i_file)
   {
-    logger.addEvent(PSTR("Failed to open file: ") + i_path);
+    SystemLog.addEvent(PSTR("Failed to open file: ") + i_path);
     CardHealthy = false;
     return false;
   }
 
-  logger.addEvent(PSTR("Opened file: ") + i_path);
+  SystemLog.addEvent(PSTR("Opened file: ") + i_path);
   return true;
 }
 
@@ -137,11 +138,11 @@ void MicroSd::closeFile(File *i_file)
   if (*i_file)
   {
     i_file->close();
-    logger.addEvent(F("File closed successfully"));
+    SystemLog.addEvent(F("File closed successfully"));
   }
   else
   {
-    logger.addEvent(F("Attempted to close an unopened file"));
+    SystemLog.addEvent(F("Attempted to close an unopened file"));
   }
 }
 
@@ -154,11 +155,11 @@ bool MicroSd::renameFile(String path1, String path2)
 {
   if (!CardHealthy)
   {
-    logger.addEvent(F("Failed to rename file - Card not healthy"));
+    SystemLog.addEvent(F("Failed to rename file - Card not healthy"));
     return false;
   }
 
-  logger.addEvent(PSTR("Renaming file: ") + path1 + PSTR(" to ") + path2);
+  SystemLog.addEvent(PSTR("Renaming file: ") + path1 + PSTR(" to ") + path2);
   return SD_MMC.rename(path1.c_str(), path2.c_str());
 }
 
@@ -166,11 +167,11 @@ bool MicroSd::deleteFile(String path)
 {
   if (!CardHealthy)
   {
-    logger.addEvent(F("Failed to delete file - Card not healthy"));
+    SystemLog.addEvent(F("Failed to delete file - Card not healthy"));
     return false;
   }
 
-  logger.addEvent(PSTR("Deleting file: ") + path);
+  SystemLog.addEvent(PSTR("Deleting file: ") + path);
   return SD_MMC.remove(path.c_str());
 }
 
@@ -178,21 +179,21 @@ uint32_t MicroSd::getFileSize(String path)
 {
   if (!CardHealthy)
   {
-    logger.addEvent(F("Failed to get file size - Card not healthy"));
+    SystemLog.addEvent(F("Failed to get file size - Card not healthy"));
     return 0;
   }
 
   File file = SD_MMC.open(path.c_str(), FILE_APPEND);
   if (!file)
   {
-    logger.addEvent(PSTR("Failed to open file to get size: ") + path);
+    SystemLog.addEvent(PSTR("Failed to open file to get size: ") + path);
     return 0;
   }
 
   uint32_t size = file.size();
   file.close();
 
-  logger.addEvent(PSTR("File size for ") + path + PSTR(": ") + String(size) + PSTR(" bytes"));
+  SystemLog.addEvent(PSTR("File size for ") + path + PSTR(": ") + String(size) + PSTR(" bytes"));
   return size / 1024;
 }
 
@@ -200,11 +201,11 @@ bool MicroSd::createDir(String path)
 {
   if (!CardHealthy)
   {
-    logger.addEvent(F("Failed to create directory - Card not healthy"));
+    SystemLog.addEvent(F("Failed to create directory - Card not healthy"));
     return false;
   }
 
-  logger.addEvent(PSTR("Creating directory: ") + path);
+  SystemLog.addEvent(PSTR("Creating directory: ") + path);
   return SD_MMC.mkdir(path.c_str());
 }
 
@@ -212,11 +213,11 @@ bool MicroSd::removeDir(String path)
 {
   if (!CardHealthy)
   {
-    logger.addEvent(F("Failed to remove directory - Card not healthy"));
+    SystemLog.addEvent(F("Failed to remove directory - Card not healthy"));
     return false;
   }
 
-  logger.addEvent(PSTR("Removing directory: ") + path);
+  SystemLog.addEvent(PSTR("Removing directory: ") + path);
   return SD_MMC.rmdir(path.c_str());
 }
 
@@ -224,11 +225,11 @@ bool MicroSd::checkFile(String path)
 {
   if (!CardHealthy)
   {
-    logger.addEvent(F("Failed to check file/directory - Card not healthy"));
+    SystemLog.addEvent(F("Failed to check file/directory - Card not healthy"));
     return false;
   }
 
-  logger.addEvent(PSTR("Checking existence of file/directory: ") + path);
+  SystemLog.addEvent(PSTR("Checking existence of file/directory: ") + path);
   return SD_MMC.exists(path.c_str());
 }
 
@@ -236,18 +237,18 @@ bool MicroSd::createFile(String path)
 {
   if (!CardHealthy)
   {
-    logger.addEvent(F("Failed to create file - Card not healthy"));
+    SystemLog.addEvent(F("Failed to create file - Card not healthy"));
     return false;
   }
 
-  logger.addEvent(PSTR("Creating file: ") + path);
+  SystemLog.addEvent(PSTR("Creating file: ") + path);
   File file = SD_MMC.open(path.c_str(), FILE_WRITE);
   if (file)
   {
     file.close();
     return true;
   }
-  logger.addEvent(PSTR("Failed to create file: ") + path);
+  SystemLog.addEvent(PSTR("Failed to create file: ") + path);
   return false;
 }
 
@@ -255,11 +256,11 @@ bool MicroSd::removeFile(String path)
 {
   if (!CardHealthy)
   {
-    logger.addEvent(F("Failed to remove file - Card not healthy"));
+    SystemLog.addEvent(F("Failed to remove file - Card not healthy"));
     return false;
   }
 
-  logger.addEvent(PSTR("Removing file: ") + path);
+  SystemLog.addEvent(PSTR("Removing file: ") + path);
   return SD_MMC.remove(path.c_str());
 }
 
@@ -267,11 +268,11 @@ bool MicroSd::createFileIfNotExists(String path)
 {
   if (!CardHealthy)
   {
-    logger.addEvent(F("Failed to create file/directory if not exists - Card not healthy"));
+    SystemLog.addEvent(F("Failed to create file/directory if not exists - Card not healthy"));
     return false;
   }
 
-  logger.addEvent(PSTR("Creating file/directory if not exists: ") + path);
+  SystemLog.addEvent(PSTR("Creating file/directory if not exists: ") + path);
 
   if (checkFile(path))
   {
@@ -283,7 +284,7 @@ bool MicroSd::createFileIfNotExists(String path)
     return true;
   }
 
-  logger.addEvent(PSTR("Failed to create file/directory: ") + path);
+  SystemLog.addEvent(PSTR("Failed to create file/directory: ") + path);
   return false;
 }
 
@@ -294,14 +295,14 @@ bool MicroSd::appendFile(File *i_file, String *i_msg)
 
   if (!CardHealthy)
   {
-    logger.addEvent(F("Failed to append to file - Card not healthy"));
+    SystemLog.addEvent(F("Failed to append to file - Card not healthy"));
     xSemaphoreGive(sdCardMutex);
     return false;
   }
 
   if (!*i_file)
   {
-    logger.addEvent("File not opened");
+    SystemLog.addEvent("File not opened");
     xSemaphoreGive(sdCardMutex);
     return false;
   }
@@ -316,12 +317,12 @@ bool MicroSd::appendFile(File *i_file, String *i_msg)
     }
     else
     {
-      logger.addEvent(F("Failed write to file - Write error"));
+      SystemLog.addEvent(F("Failed write to file - Write error"));
     }
   }
   else
   {
-    logger.addEvent(F("Failed write to file"));
+    SystemLog.addEvent(F("Failed write to file"));
   }
 
   xSemaphoreGive(sdCardMutex);
@@ -332,14 +333,14 @@ uint16_t MicroSd::fileCount(String dirName, String fileNameFilter)
 {
   if (!CardHealthy)
   {
-    logger.addEvent(F("Failed to count files - Card not healthy"));
+    SystemLog.addEvent(F("Failed to count files - Card not healthy"));
     return 0;
   }
 
   File dir = SD_MMC.open(dirName.c_str());
   if (!dir || !dir.isDirectory())
   {
-    logger.addEvent(PSTR("Invalid directory: ") + dirName);
+    SystemLog.addEvent(PSTR("Invalid directory: ") + dirName);
     return 0;
   }
 
@@ -354,7 +355,7 @@ uint16_t MicroSd::fileCount(String dirName, String fileNameFilter)
     file = dir.openNextFile();
   }
 
-  logger.addEvent(PSTR("Files counted in directory ") + dirName + PSTR(": ") + String(fileCount));
+  SystemLog.addEvent(PSTR("Files counted in directory ") + dirName + PSTR(": ") + String(fileCount));
   return fileCount;
 }
 
@@ -367,14 +368,14 @@ bool MicroSd::removeFilesInDir(String path, int maxFiles)
 {
   if (!CardHealthy)
   {
-    logger.addEvent(F("Failed to remove files - Card not healthy"));
+    SystemLog.addEvent(F("Failed to remove files - Card not healthy"));
     return false;
   }
 
   File dir = SD_MMC.open(path.c_str());
   if (!dir || !dir.isDirectory())
   {
-    logger.addEvent(PSTR("Invalid directory for file removal: ") + path);
+    SystemLog.addEvent(PSTR("Invalid directory for file removal: ") + path);
     return false;
   }
 
@@ -385,17 +386,17 @@ bool MicroSd::removeFilesInDir(String path, int maxFiles)
     String fileName = path + "/" + file.name();
     if (SD_MMC.remove(fileName.c_str()))
     {
-      logger.addEvent(PSTR("Removed file: ") + fileName);
+      SystemLog.addEvent(PSTR("Removed file: ") + fileName);
       fileCount++;
     }
     else
     {
-      logger.addEvent(PSTR("Failed to remove file: ") + fileName);
+      SystemLog.addEvent(PSTR("Failed to remove file: ") + fileName);
     }
     file = dir.openNextFile();
   }
 
-  logger.addEvent(PSTR("Total files removed from ") + path + F(": ") + String(fileCount));
+  SystemLog.addEvent(PSTR("Total files removed from ") + path + F(": ") + String(fileCount));
   return fileCount > 0;
 }
 
@@ -438,7 +439,7 @@ bool MicroSd::WritePicture(const String &photoName, const uint8_t *photoData, si
 {
   if (!CardHealthy)
   {
-    logger.addEvent(F("Failed to write picture - Card not healthy"));
+    SystemLog.addEvent(F("Failed to write picture - Card not healthy"));
     return false;
   }
 
@@ -448,7 +449,7 @@ bool MicroSd::WritePicture(const String &photoName, const uint8_t *photoData, si
 
   if (!file)
   {
-    logger.addEvent(PSTR("Failed to write picture - Could not open file: ") + photoName);
+    SystemLog.addEvent(PSTR("Failed to write picture - Could not open file: ") + photoName);
     return status;
   }
 
@@ -456,11 +457,11 @@ bool MicroSd::WritePicture(const String &photoName, const uint8_t *photoData, si
 
   if (bytesWritten != photoLen)
   {
-    logger.addEvent(F("Failed to write picture - Error while writing to file"));
+    SystemLog.addEvent(F("Failed to write picture - Error while writing to file"));
   }
   else
   {
-    logger.addEvent(PSTR("Picture written successfully: ") + photoName);
+    SystemLog.addEvent(PSTR("Picture written successfully: ") + photoName);
     status = true;
   }
 
@@ -473,7 +474,7 @@ void MicroSd::sendFileToClient(AsyncWebServerRequest *request, const String &pat
 {
   if (!CardHealthy)
   {
-    logger.addEvent(F("Failed to send file to client - Card not healthy"));
+    SystemLog.addEvent(F("Failed to send file to client - Card not healthy"));
     request->send(500, "text/plain", "SD card not healthy");
     return;
   }
@@ -482,7 +483,7 @@ void MicroSd::sendFileToClient(AsyncWebServerRequest *request, const String &pat
 
   if (!file)
   {
-    logger.addEvent(PSTR("Failed to send file to client - Could not open file: ") + path);
+    SystemLog.addEvent(PSTR("Failed to send file to client - Could not open file: ") + path);
     request->send(500, "text/plain", "Failed to open file");
     return;
   }
@@ -499,11 +500,11 @@ void MicroSd::formatCard()
 {
   if (!CardHealthy)
   {
-    logger.addEvent(F("Failed to format card - Card not healthy"));
+    SystemLog.addEvent(F("Failed to format card - Card not healthy"));
     return;
   }
 
-  logger.addEvent(F("Formatting SD card..."));
+  SystemLog.addEvent(F("Formatting SD card..."));
   char drv[3] = {'0', ':', 0};
   const size_t workbuf_size = 4096;
   void *workbuf = NULL;
@@ -514,7 +515,7 @@ void MicroSd::formatCard()
   workbuf = ff_memalloc(workbuf_size);
   if (workbuf == NULL)
   {
-    logger.addEvent(F("Failed to allocate memory for workbuf"));
+    SystemLog.addEvent(F("Failed to allocate memory for workbuf"));
     return;
   }
 
@@ -525,5 +526,4 @@ void MicroSd::formatCard()
   FRESULT res = f_mkfs(drv, FM_ANY, alloc_unit_size, workbuf, workbuf_size);
 
   free(workbuf);
-
 }

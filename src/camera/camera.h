@@ -8,11 +8,13 @@
 #include "logging/logger.h"
 #include "cfg.h"
 #include <esp_task_wdt.h>
+#include "crypto/crypto.h"
+#include <vector>
 
 class Camera
 {
 public:
-    explicit Camera(Logger &logger);
+    Camera();
 
     void init();
     void reinitialize();
@@ -29,11 +31,11 @@ public:
     bool isCaptureSuccessful() const;
     camera_fb_t *getPhotoFrameBuffer() const;
     camera_fb_t *getDuplicatePhotoFrameBuffer() const;
-    
+
     void returnCapturedFrameBuffer();
 
-    void connectSdCard(MicroSd *sdCard);
     void takePhotoToSdCard();
+    void connectSdCard();
 
     void timelapseTask(void *pvParameters);
 
@@ -42,9 +44,6 @@ private:
     void applyCameraConfig();
     void fetchCameraModuleInfo();
     framesize_t convertToFrameSize(uint8_t data);
-
-    Logger &logger;
-    MicroSd *sdCard = nullptr;
 
     uint8_t PhotoQuality = PHOTO_QUALITY;
     uint8_t FrameSize = FRAME_SIZE;
@@ -62,4 +61,6 @@ private:
 
     String CameraName;
     camera_pid_t CameraType;
+
+    Crypto crypto;
 };

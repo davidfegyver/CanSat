@@ -1,60 +1,41 @@
 #include "network.h"
+#include "globals.h"
 
-Network::Network(Logger &i_logger) : logger(i_logger) {}
+Network::Network() {}
 
 void Network::init()
 {
-  logger.addEvent(F("Initializing WiFi"));
+  SystemLog.addEvent(F("Initializing WiFi"));
   WiFi.mode(WIFI_MODE_AP);
   WiFi.softAPConfig(IPAddress(WIFI_IP), IPAddress(WIFI_IP), IPAddress(WIFI_SUBNET));
   WiFi.softAP(WIFI_SSID, WIFI_PASSWORD, WIFI_CHANNEL, 0, WIFI_MAX_CLIENTS);
 
-  logger.addEvent(PSTR("WiFi MAC: ") + WiFi.macAddress());
+  SystemLog.addEvent(PSTR("WiFi MAC: ") + WiFi.macAddress());
   WiFi.setHostname(DEVICE_HOSTNAME);
 
-  logger.addEvent(F("WiFi initialized successfully"));
+  SystemLog.addEvent(F("WiFi initialized successfully"));
 
-  logger.addEvent(F("Initializing Webserver"));
+  SystemLog.addEvent(F("Initializing Webserver"));
 
   setupRoutes();
 
   webserver.begin();
 
-  logger.addEvent(PSTR("Webserver started, connect at: http://") + WiFi.softAPIP().toString() + PSTR(":") + String(WEB_SERVER_PORT));
-}
-
-void Network::connectCamera(Camera *i_camera)
-{
-  camera = i_camera;
-}
-
-void Network::connectSdCard(MicroSd *i_sdCard)
-{
-  sdCard = i_sdCard;
-}
-
-void Network::connectBlinkingLed(BlinkingLed *i_led)
-{
-  led = i_led;
+  SystemLog.addEvent(PSTR("Webserver started, connect at: http://") + WiFi.softAPIP().toString() + PSTR(":") + String(WEB_SERVER_PORT));
 }
 
 void Network::setupRoutes()
 {
   setupStaticFiles(webserver);
 
-  webserver.on("/action/camera/capture", HTTP_GET, [this](AsyncWebServerRequest *request)
+  webserver.on("/action/SystemCamera/capture", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
-    if (camera) {
-      camera -> capturePhoto();
-      request -> send(200, "text/plain", "Photo captured");
-    } else {
-      request -> send(500, "text/plain", "Camera not connected");
-    } });
+      SystemCamera. capturePhoto();
+      request -> send(200, "text/plain", "Photo captured"); });
 
   webserver.on("/latest.jpg", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
-    if (camera) {
-      camera_fb_t * fb = camera -> getPhotoFrameBuffer();
+      camera_fb_t * fb = SystemCamera. getPhotoFrameBuffer();
 
       if (!fb) {
         request -> send(500, "text/plain", "No photo available");
@@ -71,16 +52,12 @@ void Network::setupRoutes()
       });
 
       response -> addHeader("Cache-Control", "no-cache");
-      request -> send(response);
-    } else {
-      request -> send(500, "text/plain", "Camera not connected");
-    } });
+      request -> send(response); });
 
   webserver.on("/capture.jpg", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
-    if (camera) {
-      camera -> capturePhoto();
-      camera_fb_t * fb = camera -> getPhotoFrameBuffer();
+      SystemCamera. capturePhoto();
+      camera_fb_t * fb = SystemCamera. getPhotoFrameBuffer();
 
       if (!fb) {
         request -> send(500, "text/plain", "No photo available");
@@ -97,17 +74,14 @@ void Network::setupRoutes()
       });
 
       response -> addHeader("Cache-Control", "no-cache");
-      request -> send(response);
-    } else {
-      request -> send(500, "text/plain", "Camera not connected");
-    } });
+      request -> send(response); });
 
   webserver.on("/action/getcrypto", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
     String response = "Crypto test\n";
     Crypto crypto;
 
-                camera_fb_t * fb = camera -> getPhotoFrameBuffer();
+                camera_fb_t * fb = SystemCamera. getPhotoFrameBuffer();
 
     if (!fb) {
       request -> send(500, "text/plain", "No photo available");
@@ -136,54 +110,41 @@ void Network::setupRoutes()
 
   webserver.on("/action/led/toggle", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
-      if (led) {
-        led -> toggle();
+        flash_led .toggle();
         request -> send(200, "text/plain", "Led toggled");
-        return;
-      } 
-        request -> send(500, "text/plain", "Led not connected"); });
+        return; });
 
   webserver.on("/action/led/blink/suspend", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
-        if (led) {
-          led -> suspendTask();
+          flash_led.suspendTask();
           request -> send(200, "text/plain", "Led blinking suspended");
-          return;
-        } 
-          request -> send(500, "text/plain", "Led not connected"); });
+          return; });
 
   webserver.on("/action/led/blink/resume", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
-          if (led) {
-            led -> resumeTask();
+            flash_led. resumeTask();
             request -> send(200, "text/plain", "Led blinking resumed");
-            return;
-          } 
-            request -> send(500, "text/plain", "Led not connected"); });
+            return; });
 
   webserver.onNotFound([this](AsyncWebServerRequest *request)
                        { handleNotFound(request); });
 
   webserver.on("/System.log", HTTP_GET, [this](AsyncWebServerRequest *request)
                { 
-                if(sdCard && sdCard->getCardHealthy()){
-                sdCard->sendFileToClient(request, logger.getFilePath() + "/" + logger.getFileName());
+                if( sd_card.getCardHealthy()){
+                sd_card.sendFileToClient(request, SystemLog.getFilePath() + "/" + SystemLog.getFileName());
 
                 }
                 else{
-                  request -> send(200, "text/plain", logger.getFullLogMsg());
+                  request -> send(200, "text/plain", SystemLog.getFullLogMsg());
                 } });
 
   webserver.on("/action/sd/format", HTTP_GET, [this](AsyncWebServerRequest *request)
-               { 
-    if (sdCard) {
-      sdCard -> formatCard();
+               {
+    sd_card.formatCard();
 
-      request -> send(200, "text/plain", "SD card formatted, rebooting...");
-      ESP.restart();
-    } else {
-      request -> send(500, "text/plain", "SD card not connected");
-    } });
+    request->send(200, "text/plain", "SD card formatted, rebooting...");
+    ESP.restart(); });
 
   webserver.on("/action/system/reboot", HTTP_GET, [this](AsyncWebServerRequest *request)
                {  
@@ -193,27 +154,18 @@ void Network::setupRoutes()
 
   webserver.on("/action/sd/getinfo", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
-    if (sdCard) {
       String response = "SD card info\n";
-      response += "Card size: " + String(sdCard -> getCardSizeMB()) + " MB\n";
-      response += "Total space: " + String(sdCard -> getCardTotalMB()) + " MB\n";
-      response += "Used space: " + String(sdCard -> getCardUsedMB()) + " MB\n";
-      response += "Free space: " + String(sdCard -> getCardFreeMB()) + " MB\n";
-      response += "Used space percent: " + String(sdCard -> getUsedSpacePercent()) + "%\n";
-      response += "Free space percent: " + String(sdCard -> getFreeSpacePercent()) + "%\n";
+      response += "Card size: " + String(sd_card. getCardSizeMB()) + " MB\n";
+      response += "Total space: " + String(sd_card. getCardTotalMB()) + " MB\n";
+      response += "Used space: " + String(sd_card. getCardUsedMB()) + " MB\n";
+      response += "Free space: " + String(sd_card. getCardFreeMB()) + " MB\n";
+      response += "Used space percent: " + String(sd_card. getUsedSpacePercent()) + "%\n";
+      response += "Free space percent: " + String(sd_card. getFreeSpacePercent()) + "%\n";
 
-      request -> send(200, "text/plain", response);
-    } else {
-      request -> send(500, "text/plain", "SD card not connected");
-    } });
+      request -> send(200, "text/plain", response); });
 }
 
 void Network::handleNotFound(AsyncWebServerRequest *request)
 {
   request->send(404, "text/plain", "Not found");
-}
-
-void Network::connectLora(Lora *i_lora)
-{
-  lora = i_lora;
 }

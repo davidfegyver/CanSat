@@ -1,29 +1,29 @@
 #include "tasks.h"
+#include "globals.h"
 
-Tasks::Tasks(Logger &i_logger) : logger(i_logger) {}
+Tasks::Tasks() {}
 
 void Tasks::init()
 {
-    logger.addEvent(F("Initializing Watchdog Timer (WDG)"));
+    SystemLog.addEvent(F("Initializing Watchdog Timer (WDG)"));
     esp_task_wdt_init(WDG_TIMEOUT, true);
     ESP_ERROR_CHECK(esp_task_wdt_add(NULL));
     esp_task_wdt_reset();
 }
 
-void Tasks::createSdCardHealthCheckTask(MicroSd *sdCard)
+void Tasks::createSdCardHealthCheckTask()
 {
     TaskHandle_t Task_SdCardHealthCheck;
-    logger.addEvent(F("Creating SD Card Health Check Task"));
+    SystemLog.addEvent(F("Creating SD Card Health Check Task"));
 
     xTaskCreatePinnedToCore(
         [](void *pvParameters)
         {
-            MicroSd *sdCard = static_cast<MicroSd *>(pvParameters);
-            sdCard->cardCheckTask(pvParameters);
+            sd_card.cardCheckTask(pvParameters);
         },
         "SdCardHealthCheckTask",
         2048,
-        sdCard,
+        NULL,
         1,
         &Task_SdCardHealthCheck,
         0);
@@ -34,23 +34,22 @@ void Tasks::createSdCardHealthCheckTask(MicroSd *sdCard)
 void Tasks::createTelemetryTask()
 {
     TaskHandle_t Task_Telemetry;
-    logger.addEvent(F("Creating Telemetry Task"));
+    SystemLog.addEvent(F("Creating Telemetry Task"));
 
     xTaskCreatePinnedToCore(
         [](void *pvParameters)
         {
-            Logger *logger = static_cast<Logger *>(pvParameters);
-            logger->addEvent(PSTR("Starting Telemetry task on core: ") + String(xPortGetCoreID()));
+            SystemLog.addEvent(PSTR("Starting Telemetry task on core: ") + String(xPortGetCoreID()));
 
             TickType_t xLastWakeTime = xTaskGetTickCount();
             while (true)
             {
                 esp_task_wdt_reset();
-                logger->addEvent(PSTR("Free RAM: ") + String(ESP.getFreeHeap()) + F(" B"));
-                logger->addEvent(PSTR("Min Free RAM: ") + String(ESP.getMinFreeHeap()) + F(" B"));
-                logger->addEvent(PSTR("Free PSRAM: ") + String(ESP.getFreePsram()) + F(" B"));
-                logger->addEvent(PSTR("Min Free PSRAM: ") + String(ESP.getMinFreePsram()) + F(" B"));
-                logger->addEvent(PSTR("MCU Temperature: ") + String(temperatureRead()) + F(" °C"));
+                SystemLog.addEvent(PSTR("Free RAM: ") + String(ESP.getFreeHeap()) + F(" B"));
+                SystemLog.addEvent(PSTR("Min Free RAM: ") + String(ESP.getMinFreeHeap()) + F(" B"));
+                SystemLog.addEvent(PSTR("Free PSRAM: ") + String(ESP.getFreePsram()) + F(" B"));
+                SystemLog.addEvent(PSTR("Min Free PSRAM: ") + String(ESP.getMinFreePsram()) + F(" B"));
+                SystemLog.addEvent(PSTR("MCU Temperature: ") + String(temperatureRead()) + F(" °C"));
 
                 esp_task_wdt_reset();
                 vTaskDelayUntil(&xLastWakeTime, TASK_TELEMETRY / portTICK_PERIOD_MS);
@@ -58,7 +57,7 @@ void Tasks::createTelemetryTask()
         },
         "TelemetryTask",
         2048,
-        &logger,
+        NULL,
         2,
         &Task_Telemetry,
         0);
@@ -66,20 +65,19 @@ void Tasks::createTelemetryTask()
     ESP_ERROR_CHECK(esp_task_wdt_add(Task_Telemetry));
 }
 
-void Tasks::createTimelapseTask(Camera *camera)
+void Tasks::createTimelapseTask()
 {
     TaskHandle_t Task_Timelapse;
-    logger.addEvent(F("Creating Timelapse Task"));
+    SystemLog.addEvent(F("Creating Timelapse Task"));
 
     xTaskCreatePinnedToCore(
         [](void *pvParameters)
         {
-            Camera *camera = static_cast<Camera *>(pvParameters);
-            camera->timelapseTask(pvParameters);
+            SystemCamera.timelapseTask(pvParameters);
         },
         "TimelapseTask",
-        4096,
-        camera,
+        8192,
+        NULL,
         1,
         &Task_Timelapse,
         0);

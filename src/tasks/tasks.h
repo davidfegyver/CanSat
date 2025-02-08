@@ -10,14 +10,10 @@
 class Tasks
 {
 public:
-    explicit Tasks(Logger &logger);
-    ~Tasks() = default;
+    Tasks();
 
     void init();
-    void createSdCardHealthCheckTask(MicroSd *sdCard);
+    void createSdCardHealthCheckTask();
     void createTelemetryTask();
-    void createTimelapseTask(Camera *camera);
-
-private:
-    Logger &logger;
+    void createTimelapseTask();
 };
