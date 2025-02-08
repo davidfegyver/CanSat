@@ -28,7 +28,7 @@ public:
     void radioSetSF(int spreadingFactor);
     void radioSetCw(const String &state);
     void radioTransmit(const String &data, int n = 1);
-    
+    void radioSetBW(int bandwidth);
 
 private:
     Logger &logger;

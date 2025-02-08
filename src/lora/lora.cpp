@@ -14,6 +14,7 @@ void Lora::begin()
     radioSetPower(LORA_POWER);
     radioSetPaBoost(LORA_PABOOST);
     radioSetCRC(LORA_CRC);
+    radioSetBW(LORA_BANDWIDTH);
 }
 
 void Lora::sendCommand(const String &command)
@@ -75,7 +76,13 @@ void Lora::radioSetSF(int spreadingFactor)
     sendCommand("radio set sf sf" + String(spreadingFactor));
 }
 
-void Lora::radioSetCw(const String &state){
+void Lora::radioSetBW(int bandwidth)
+{
+    sendCommand("radio set bw " + String(bandwidth));
+}
+
+void Lora::radioSetCw(const String &state)
+{
     sendCommand("radio cw " + state);
 }
 
