@@ -48,6 +48,11 @@ void Logger::addEvent(String msg, bool newLine, bool showTime)
 
   if (!checkIsLogFileHealthy())
   {
+    if (FullLogMsg.length() > LOGS_MAX_SIZE)
+    {
+      FullLogMsg = "";
+    }
+    
     FullLogMsg += LastLogMsg;
   }
   else
@@ -56,11 +61,6 @@ void Logger::addEvent(String msg, bool newLine, bool showTime)
   }
 
   xSemaphoreGive(LogMutex);
-
-  if (!checkIsLogFileHealthy())
-  {
-    checkMaxLogFileSize();
-  }
 }
 
 String Logger::getFileName() const
@@ -77,21 +77,10 @@ void Logger::checkMaxLogFileSize()
 {
   if (checkIsLogFileHealthy())
   {
-    uint32_t FileSize = sd_card.getFileSize(FilePath + "/" + FileName);
     uint16_t file_count = sd_card.fileCount(FilePath, FileName);
-
-    if (FileSize > MaxLogSize)
-    {
       closeLogFile();
       sd_card.renameFile(FilePath + "/" + FileName, FilePath + "/" + FileName + String(file_count));
       openLogFile();
-    }
-  }
-
-  if (FullLogMsg.length() > MaxLogSize)
-  {
-    FullLogMsg = "";
-    addEvent(F("In-memory log message cleared due to size limit."));
   }
 }
 

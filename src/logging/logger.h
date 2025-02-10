@@ -8,7 +8,6 @@ class Logger
 private:
   String FilePath;
   String FileName;
-  uint16_t MaxLogSize = 1024;
   bool TimeSynced = false;
   String LastLogMsg;
   String FullLogMsg;
