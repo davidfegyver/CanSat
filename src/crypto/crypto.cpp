@@ -84,6 +84,10 @@ String Crypto::uint8_vector_to_string(std::vector<uint8_t> data)
     String result = "";
     for (int i = 0; i < data.size(); i++)
     {
+        if (data[i] < 0x10)
+        {
+            result += "0"; 
+        }
         result += String(data[i], HEX);
     }
     return result;
