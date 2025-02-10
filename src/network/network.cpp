@@ -28,7 +28,7 @@ void Network::setupRoutes()
 {
   setupStaticFiles(webserver);
 
-  webserver.on("/action/SystemCamera/capture", HTTP_GET, [this](AsyncWebServerRequest *request)
+  webserver.on("/action/camera/capture", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
       SystemCamera. capturePhoto();
       request -> send(200, "text/plain", "Photo captured"); });
