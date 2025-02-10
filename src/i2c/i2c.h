@@ -32,9 +32,13 @@ public:
         sensors_event_t getLastAccelerometerEvent();
         sensors_event_t getLastGyroscopeEvent();
         sensors_event_t getLastMagnetometerEvent();
+
         float getLastTemperature();
-        float getLastRelativePressure();
-        float getLastRelativeAltitude();
+        float getLastPressure();
+
+        bool isMPUInitialized();
+        bool isMagInitialized();
+        bool isBarometerInitialized();
 
 private:
         Adafruit_HMC5883_Unified mag;
@@ -47,5 +51,10 @@ private:
         sensors_event_t lastMagnetometerEvent;
 
         float lastTemperature;
-        float lastRealPressure;
+        float lastPressure;
+
+        bool mpuInitialized = false;
+        bool magInitialized = false;
+        bool barometerInitialized = false;
+        
 };

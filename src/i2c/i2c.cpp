@@ -53,6 +53,19 @@ void I2C::initMS5611()
 
     barometer.begin();
 
+    Wire.beginTransmission((byte)MS5611_ADDRESS);
+    int error = Wire.endTransmission();
+
+    if (error != 0)
+    {
+        SystemLog.addEvent(F("MS5611 initialization failed"));
+        barometerInitialized = false;
+        return;
+    }
+
+    barometerInitialized = true;
+
+
     SystemLog.addEvent(F("MS5611 initialized"));
 }
 
@@ -62,6 +75,17 @@ void I2C::initHMC5883L()
 
     mag.begin();
 
+    Wire.beginTransmission((byte)HMC5883_ADDRESS_MAG);
+    int error = Wire.endTransmission();
+
+    if (error != 0)
+    {
+        SystemLog.addEvent(F("HMC5883L initialization failed"));
+        magInitialized = false;
+        return;
+    }
+
+    magInitialized = true;
     SystemLog.addEvent(F("HMC5883L initialized"));
 }
 
@@ -70,9 +94,13 @@ void I2C::initMPU6050()
 
     SystemLog.addEvent(F("Initializing MPU6050 (Gyro & Accelerometer - IMU) ..."));
 
-    mpu.begin();
+    mpuInitialized = mpu.begin();
 
-    SystemLog.addEvent(F("MPU6050 2"));
+    if (!mpuInitialized)
+    {
+        SystemLog.addEvent(F("MPU6050 initialization failed"));
+        return;
+    }
 
     mpu.setGyroRange(GYRO_RANGE);
     mpu.setAccelerometerRange(ACCEL_RANGE);
@@ -176,10 +204,10 @@ void I2C::createMS5611Task()
                 esp_task_wdt_reset();
 
                 i2c->lastTemperature = barometer.readTemperature();
-                i2c->lastRealPressure = barometer.readPressure();
+                i2c->lastPressure = barometer.readPressure();
 
                 String TlogString = "T:" + String(i2c->lastTemperature);
-                String PlogString = "P:" + String(i2c->lastRealPressure);
+                String PlogString = "P:" + String(i2c->lastPressure);
 
                 SensorLog.addEvent(TlogString);
                 SensorLog.addEvent(PlogString);
@@ -196,3 +224,45 @@ void I2C::createMS5611Task()
 
     ESP_ERROR_CHECK(esp_task_wdt_add(Task_MS5611));
 }
+
+sensors_event_t I2C::getLastAccelerometerEvent()
+{
+    return lastAccelerometerEvent;
+}
+
+sensors_event_t I2C::getLastGyroscopeEvent()
+{
+    return lastGyroscopeEvent;
+}
+
+sensors_event_t I2C::getLastMagnetometerEvent()
+{
+    return lastMagnetometerEvent;
+}
+
+float I2C::getLastTemperature()
+{
+    return lastTemperature;
+}
+
+float I2C::getLastPressure()
+{
+    return lastPressure;
+}
+
+bool I2C::isMPUInitialized()
+{
+    return mpuInitialized;
+}
+
+bool I2C::isMagInitialized()
+{
+    return magInitialized;
+}
+
+bool I2C::isBarometerInitialized()
+{
+    return barometerInitialized;
+}
+
+
