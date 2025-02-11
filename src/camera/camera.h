@@ -49,7 +49,7 @@ private:
     uint8_t FrameSize = FRAME_SIZE;
     framesize_t TFrameSize = convertToFrameSize(FrameSize);
     int photoCount = 0;
-
+    int serial = 0;
     SemaphoreHandle_t frameBufferSemaphore = xSemaphoreCreateMutex();
     camera_fb_t *FrameBuffer = nullptr;
     camera_fb_t *FrameBufferDuplicate = (camera_fb_t *)heap_caps_malloc(sizeof(camera_fb_t), MALLOC_CAP_SPIRAM);

@@ -164,7 +164,7 @@ void Camera::takePhotoToSdCard()
 
     if (isCaptureSuccessful() && sd_card.getCardHealthy())
     {
-        String FileName = String(PHOTO_FOLDER) + String("/") + String(PHOTO_PREFIX) + String(++photoCount) + String(PHOTO_SUFFIX);
+        String FileName = String(PHOTO_FOLDER) + String(serial) + String("/") + String(PHOTO_PREFIX) + String(++photoCount) + String(PHOTO_SUFFIX);
 
         if (sd_card.WritePicture(FileName, FrameBuffer->buf, FrameBuffer->len))
         {
@@ -273,9 +273,12 @@ void Camera::connectSdCard()
 {
     if (sd_card.getCardHealthy())
     {
-        sd_card.createFileIfNotExists(PHOTO_FOLDER);
-        photoCount = sd_card.countFilesInDir(PHOTO_FOLDER);
-        SystemLog.addEvent(PSTR("SD card connected. Photo count: ") + String(photoCount));
+        int lastSlash = String(PHOTO_FOLDER).lastIndexOf('/');
+        String parentFolder = String(PHOTO_FOLDER).substring(0, lastSlash + 1);
+        String lastPart = String(PHOTO_FOLDER).substring(lastSlash + 1);
+        serial = sd_card.fileCount(parentFolder, lastPart);
+        
+        sd_card.createDir(PHOTO_FOLDER + String(serial));
     }
 }
 

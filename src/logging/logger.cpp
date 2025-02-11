@@ -9,20 +9,24 @@ Logger::Logger(String i_FilePath, String i_FileName)
 
 void Logger::openLogFile()
 {
-  sd_card.createFileIfNotExists(FilePath);
-  addEvent(PSTR("Opening log file: ") + FilePath + PSTR("/") + FileName);
-  sd_card.openFile(&LogFile, FilePath + "/" + FileName);
+  
+  uint16_t file_count = sd_card.fileCount(FilePath, FileName);
+    
+  addEvent(PSTR("Opening log file: ") + FilePath + PSTR("/") + FileName + String(file_count));
+  
+  sd_card.createDir(FilePath + String(file_count));
+  sd_card.openFile(LogFile, FilePath + String(file_count) + "/" + FileName ); 
 }
 
 void Logger::closeLogFile()
 {
   addEvent(PSTR("Closing log file: ") + FilePath + "/" + FileName);
-  sd_card.closeFile(&LogFile);
+  sd_card.closeFile(LogFile);
 }
 
 bool Logger::checkIsLogFileHealthy()
 {
-  return sd_card.getCardHealthy() && sd_card.isFileOpen(&LogFile);
+  return sd_card.getCardHealthy() && sd_card.isFileOpen(LogFile);
 }
 
 void Logger::addEvent(String msg, bool newLine, bool showTime)
@@ -57,7 +61,7 @@ void Logger::addEvent(String msg, bool newLine, bool showTime)
   }
   else
   {
-    sd_card.appendFile(&LogFile, &LastLogMsg);
+    sd_card.appendFile(LogFile, LastLogMsg);
   }
 
   xSemaphoreGive(LogMutex);
@@ -73,27 +77,17 @@ String Logger::getFilePath() const
   return FilePath;
 }
 
-void Logger::checkMaxLogFileSize()
-{
-  if (checkIsLogFileHealthy())
-  {
-    uint16_t file_count = sd_card.fileCount(FilePath, FileName);
-      closeLogFile();
-      sd_card.renameFile(FilePath + "/" + FileName, FilePath + "/" + FileName + String(file_count));
-      openLogFile();
-  }
-}
-
 void Logger::connectSdCard()
 {
   if (sd_card.getCardHealthy())
   {
     addEvent(PSTR("SD card connected."));
-    openLogFile();
+
+      openLogFile();
 
     if (checkIsLogFileHealthy())
     {
-      sd_card.appendFile(&LogFile, &FullLogMsg);
+      sd_card.appendFile(LogFile, FullLogMsg);
       FullLogMsg = "";
     }
   }

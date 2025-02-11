@@ -4,20 +4,16 @@
 #include <FS.h>
 #include <SD_MMC.h>
 #include <esp_task_wdt.h>
-
 #include "EspAsyncWebServer.h"
 #include "cfg.h"
-
 #include "ff.h"
 #include "vfs_fat_internal.h"
-
 #include "logging/logger.h"
 
 class MicroSd
 {
 private:
   bool CardHealthy = false;
-  bool CardHealthyOnBoot = false;
   uint32_t CardSizeMB = 0;
   uint32_t CardTotalMB = 0;
   uint32_t CardUsedMB = 0;
@@ -28,39 +24,38 @@ private:
 
   SemaphoreHandle_t sdCardMutex = xSemaphoreCreateMutex();
 
+  void handleCardError(const String &);
+  void handleCardType(uint8_t);
+
 public:
   MicroSd();
-  ~MicroSd() {};
+  ~MicroSd() = default;
 
   void initCard();
   void reinitCard();
-
-  bool openFile(File *, String);
-  void closeFile(File *);
-  bool isFileOpen(File *);
-
-  bool createDir(String);
-  bool removeDir(String);
-  bool checkFile(String);
-  bool removeFile(String);
-  bool createFile(String);
-  bool createFileIfNotExists(String);
-
-  bool appendFile(File *, String *);
-  bool renameFile(String, String);
-  bool deleteFile(String);
-  uint32_t getFileSize(String);
-  uint16_t fileCount(String, String);
-  bool removeFilesInDir(String, int);
-  int countFilesInDir(String);
-
   void updateCardUsageStatus();
   void checkCardHealth();
-
-  bool getCardHealthy();
-
+  void formatCard();
   void cardCheckTask(void *pvParameters);
 
+  bool openFile(File &, const String &);
+  void closeFile(File &);
+  bool isFileOpen(File &);
+
+  bool createFile(const String &);
+  bool removeFile(const String &);
+  bool checkFile(const String &);
+  bool renameFile(const String &, const String &);
+  uint16_t fileCount(const String &, const String &);
+
+
+  bool appendFile(File &, const String &);
+  uint32_t getFileSize(const String &);
+
+  bool createDir(const String &);
+  bool removeDir(const String &);
+
+  bool getCardHealthy();
   uint16_t getCardSizeMB();
   uint16_t getCardTotalMB();
   uint16_t getCardUsedMB();
@@ -68,7 +63,6 @@ public:
   uint8_t getFreeSpacePercent();
   uint8_t getUsedSpacePercent();
 
-  bool WritePicture(const String &photoName, const uint8_t *photoData, size_t photoLen);
+  bool WritePicture(const String &, const uint8_t *, size_t);
   void sendFileToClient(AsyncWebServerRequest *, const String &);
-  void formatCard();
 };
