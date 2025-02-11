@@ -11,6 +11,7 @@ void initPeripherals()
     {
         SystemLog.connectSdCard();
         SensorLog.connectSdCard();
+        SystemCamera.connectSdCard();
     }
     SystemCamera.init();
     network.init();
