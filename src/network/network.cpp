@@ -141,9 +141,8 @@ void Network::setupRoutes()
 
   webserver.on("/action/sd/format", HTTP_GET, [this](AsyncWebServerRequest *request)
                {
+    request->send(200, "text/plain", "Formatting SD card...");
     sd_card.formatCard();
-
-    request->send(200, "text/plain", "SD card formatted, rebooting...");
     ESP.restart(); });
 
   webserver.on("/action/system/reboot", HTTP_GET, [this](AsyncWebServerRequest *request)
