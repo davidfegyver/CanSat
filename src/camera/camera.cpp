@@ -198,9 +198,9 @@ void Camera::timelapseTask(void *pvParameters)
         {
             std::vector<uint8_t> hash = crypto.sha256(FrameBuffer->buf, FrameBuffer->len);
 
-            String hashString = crypto.uint8_vector_to_string(hash);
+            lastHash = crypto.uint8_vector_to_string(hash);
 
-            SensorLog.addEvent(PSTR("R: ") + hashString);
+            SensorLog.addEvent(PSTR("R: ") + lastHash);
         }
 
         vTaskDelayUntil(&xLastWakeTime, TASK_TIMELAPSE / portTICK_PERIOD_MS);
@@ -314,3 +314,5 @@ void Camera::returnCapturedFrameBuffer()
 {
     esp_camera_fb_return(FrameBuffer);
 }
+
+String Camera::getLastHash() const { return lastHash; }

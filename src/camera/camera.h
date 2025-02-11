@@ -62,4 +62,8 @@ private:
     camera_pid_t CameraType;
 
     Crypto crypto;
+
+    String lastHash;
+
+    String getLastHash() const;
 };
