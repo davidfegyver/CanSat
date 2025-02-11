@@ -61,13 +61,6 @@ https://github.com/espressif/arduino-esp32/blob/master/libraries/SD_MMC/README.m
 #define PHOTO_PREFIX "photo"
 #define PHOTO_SUFFIX ".jpg"
 
-/* -------- EEPROM config -------- */
-
-#define EEPROM_ADDR_SOMETHING_I_CAN_FEEL 0
-#define EEPROM_LENGTH_SOMETHING_I_CAN_FEEL 1
-
-#define EEPROM_SIZE (EEPROM_LENGTH_SOMETHING_I_CAN_FEEL)
-
 /* -------- EEPROM Configuration -------- */
 #define SYSTEMLOG_FILENAME "System.log"
 #define SENSORLOG_FILENAME "Sensors.log"

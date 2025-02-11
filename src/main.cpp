@@ -3,8 +3,7 @@
 void initPeripherals()
 {
     SystemLog.addEvent(F("Initializing peripherals"));
-    EEPROM.begin(EEPROM_SIZE);
-
+    
     sd_card.initCard();
 
     if (sd_card.getCardHealthy())
