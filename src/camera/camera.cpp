@@ -52,10 +52,16 @@ void Camera::applyCameraConfig()
     config.pin_reset = RESET_GPIO_NUM;
     config.xclk_freq_hz = 20000000;
     config.pixel_format = PIXFORMAT_JPEG;
+#ifdef BOARD_HAS_PSRAM
     config.fb_location = CAMERA_FB_IN_PSRAM;
+    config.fb_count = 2;
+#else
+    config.fb_location = CAMERA_FB_IN_DRAM;
+    config.fb_count = 1;
+#endif
+
     config.frame_size = TFrameSize;
     config.jpeg_quality = PhotoQuality;
-    config.fb_count = 2;
 }
 
 void Camera::initCameraModule()
