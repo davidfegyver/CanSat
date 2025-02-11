@@ -14,6 +14,7 @@ public:
 
     void init();
     void createSdCardHealthCheckTask();
+    void createDebugTask();
     void createTelemetryTask();
     void createTimelapseTask();
 };

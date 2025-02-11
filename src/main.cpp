@@ -3,7 +3,7 @@
 void initPeripherals()
 {
     SystemLog.addEvent(F("Initializing peripherals"));
-    
+
     sd_card.initCard();
 
     if (sd_card.getCardHealthy())
@@ -14,6 +14,8 @@ void initPeripherals()
     }
     SystemCamera.init();
     network.init();
+
+    lora.begin();
 }
 
 void initSensors()

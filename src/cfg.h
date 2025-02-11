@@ -76,12 +76,13 @@ https://github.com/espressif/arduino-esp32/blob/master/libraries/SD_MMC/README.m
 
 #define WDG_TIMEOUT 30000
 
-#define TASK_TELEMETRY 10000
+#define TASK_DEBUG 10000
 #define TASK_SDCARD 30000
 #define TASK_TIMELAPSE 1000
 #define TASK_MPU6050 500
 #define TASK_HMC5883L 500
 #define TASK_MS5611 500
+#define TASK_TELEMETRY 1000
 
 /* -------- System Configuration -------- */
 #define SW_BUILD __DATE__ " " __TIME__

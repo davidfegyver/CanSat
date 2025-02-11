@@ -39,6 +39,9 @@ public:
 
     void timelapseTask(void *pvParameters);
 
+    
+    String getLastHash() const;
+
 private:
     void initCameraModule();
     void applyCameraConfig();
@@ -65,5 +68,4 @@ private:
 
     String lastHash;
 
-    String getLastHash() const;
 };

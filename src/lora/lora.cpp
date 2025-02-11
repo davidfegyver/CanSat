@@ -22,7 +22,7 @@ void Lora::begin()
 void Lora::sendCommand(const String &command)
 {
     serialPort.println(command);
-    delay(100);
+    delay(200);
 }
 
 // System Commands

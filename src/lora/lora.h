@@ -29,6 +29,7 @@ public:
     void radioTransmit(const String &data, int n = 1);
     void radioSetBW(int bandwidth);
 
+
 private:
     HardwareSerial &serialPort;
 };
