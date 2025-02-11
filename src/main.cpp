@@ -44,6 +44,7 @@ void setup()
 #if ENABLE_SERIAL_LOGS
     Serial.begin(SERIAL_BAUD);
     Serial.setDebugOutput(true);
+    Serial.println(SystemLog.getFullLogMsg());
     SystemLog.addEvent(F("Serial logs enabled"));
 #endif
 #if DISABLE_BROWNOUT
