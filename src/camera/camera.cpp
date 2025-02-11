@@ -194,11 +194,14 @@ void Camera::timelapseTask(void *pvParameters)
             capturePhoto();
         }
 
-        std::vector<uint8_t> hash = crypto.sha256(FrameBuffer->buf, FrameBuffer->len);
+        if (FrameBuffer->buf)
+        {
+            std::vector<uint8_t> hash = crypto.sha256(FrameBuffer->buf, FrameBuffer->len);
 
-        String hashString = crypto.uint8_vector_to_string(hash);
+            String hashString = crypto.uint8_vector_to_string(hash);
 
-        SystemLog.addEvent(PSTR("R: ") + hashString);
+            SensorLog.addEvent(PSTR("R: ") + hashString);
+        }
 
         vTaskDelayUntil(&xLastWakeTime, TASK_TIMELAPSE / portTICK_PERIOD_MS);
     }
