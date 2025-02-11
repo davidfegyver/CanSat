@@ -284,8 +284,6 @@ void Camera::connectSdCard()
 
 camera_fb_t *Camera::getPhotoFrameBuffer() const { return FrameBuffer; }
 
-camera_fb_t *Camera::getDuplicatePhotoFrameBuffer() const { return FrameBufferDuplicate; }
-
 bool Camera::isCaptureSuccessful() const { return CameraCaptureSuccess; }
 
 framesize_t Camera::convertToFrameSize(uint8_t data)

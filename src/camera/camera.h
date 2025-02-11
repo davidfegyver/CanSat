@@ -52,7 +52,6 @@ private:
     int serial = 0;
     SemaphoreHandle_t frameBufferSemaphore = xSemaphoreCreateMutex();
     camera_fb_t *FrameBuffer = nullptr;
-    camera_fb_t *FrameBufferDuplicate = (camera_fb_t *)heap_caps_malloc(sizeof(camera_fb_t), MALLOC_CAP_SPIRAM);
     bool CameraCaptureSuccess = false;
     int CameraFailCounter = 0;
 
