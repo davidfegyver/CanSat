@@ -76,7 +76,7 @@ void Tasks::createTimelapseTask()
             SystemCamera.timelapseTask(pvParameters);
         },
         "TimelapseTask",
-        8192,
+        4096,
         NULL,
         1,
         &Task_Timelapse,
