@@ -14,8 +14,6 @@ private:
   File LogFile;
   SemaphoreHandle_t LogMutex = xSemaphoreCreateMutex();
 
-  void checkMaxLogFileSize();
-
 public:
   Logger(String filePath, String fileName);
   ~Logger() = default;
