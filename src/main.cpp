@@ -33,9 +33,12 @@ void initTasks()
     tasks.createTelemetryTask();
     tasks.createSdCardHealthCheckTask();
 
-    i2c.createHMC5883LTask();
-    i2c.createMPU6050Task();
-    i2c.createMS5611Task();
+    if (i2c.isMPUInitialized())
+        i2c.createMPU6050Task();
+    if (i2c.isMagInitialized())
+        i2c.createHMC5883LTask();
+    if (i2c.isBarometerInitialized())
+        i2c.createMS5611Task();
 }
 
 void setup()
